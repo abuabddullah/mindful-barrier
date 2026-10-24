@@ -252,54 +252,118 @@ justificationText.addEventListener('input', () => {
 btnStep2Next.onclick = () => goToStep(3);
 
 // -------------------------------------------------------------
-// STEP 3: OATH VERIFICATION (NORMALIZED & TOKENIZED)
+// STEP 3: OATH VERIFICATION (LIVE COLOR-CODED TYPING & ERROR HIGHLIGHTER)
 // -------------------------------------------------------------
 function initStep3Oath() {
-  const oathInputText = document.getElementById('oathInputText');
-  const oathMatchStatus = document.getElementById('oathMatchStatus');
-  const btnStep3Next = document.getElementById('btnStep3Next');
-  const referenceText = document.getElementById('oathReferenceText').textContent;
+  const input = document.getElementById('oathInputText');
+  const refBox = document.getElementById('oathReferenceText');
+  const status = document.getElementById('oathMatchStatus');
+  const typoHelper = document.getElementById('typoHelper');
+  const btn = document.getElementById('btnStep3Next');
 
-  const normRef = normalizeBengali(referenceText);
-  const refWords = normRef.split(' ').filter(Boolean);
+  const engTarget = "I consciously acknowledge that social media algorithms are designed to hijack my time. I will not lose control of my life.";
+  const rawWords = engTarget.split(' ');
 
-  oathInputText.addEventListener('input', () => {
-    const normInput = normalizeBengali(oathInputText.value);
+  function cleanWord(w) {
+    return w.toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
 
-    // Exact match test
-    if (normInput === normRef) {
-      oathMatchStatus.textContent = '✓ অঙ্গীকার হুবহু মিলেছে!';
-      oathMatchStatus.className = 'match-status valid';
-      btnStep3Next.disabled = false;
-      return;
-    }
+  // Populate reference box with interactive spans
+  function renderReferenceSpans() {
+    refBox.innerHTML = '';
+    rawWords.forEach((word, idx) => {
+      const span = document.createElement('span');
+      span.className = 'oath-word';
+      span.id = `gate-oath-w-${idx}`;
+      span.textContent = word;
+      refBox.appendChild(span);
+    });
+  }
 
-    // Word-by-word tokenized progress calculation
-    const inputWords = normInput.split(' ').filter(Boolean);
-    let matchedWords = 0;
+  renderReferenceSpans();
 
-    for (let i = 0; i < inputWords.length && i < refWords.length; i++) {
-      if (inputWords[i] === refWords[i]) {
-        matchedWords++;
+  input.addEventListener('input', () => {
+    const userRaw = input.value;
+    const userWords = userRaw.trim().split(/\s+/).filter(Boolean);
+
+    let firstError = null;
+    let correctCount = 0;
+
+    rawWords.forEach((targetWord, idx) => {
+      const span = document.getElementById(`gate-oath-w-${idx}`);
+      if (!span) return;
+
+      const cleanTarget = cleanWord(targetWord);
+
+      if (idx < userWords.length) {
+        const cleanUser = cleanWord(userWords[idx]);
+
+        if (cleanUser === cleanTarget) {
+          span.className = 'oath-word correct';
+          correctCount++;
+        } else {
+          span.className = 'oath-word error';
+          if (!firstError) {
+            firstError = {
+              typed: userWords[idx],
+              expected: targetWord,
+              index: idx + 1
+            };
+          }
+        }
+      } else if (idx === userWords.length && userRaw.endsWith(' ')) {
+        span.className = 'oath-word current';
+      } else if (idx === userWords.length - 1 && !userRaw.endsWith(' ')) {
+        const cleanUser = cleanWord(userWords[idx]);
+        if (cleanTarget.startsWith(cleanUser)) {
+          span.className = 'oath-word current';
+        } else {
+          span.className = 'oath-word error';
+          if (!firstError) {
+            firstError = {
+              typed: userWords[idx],
+              expected: targetWord,
+              index: idx + 1
+            };
+          }
+        }
       } else {
-        break; // Stop at first mismatch
+        span.className = 'oath-word';
       }
-    }
+    });
 
-    // If all words matched
-    if (matchedWords === refWords.length && inputWords.length === refWords.length) {
-      oathMatchStatus.textContent = '✓ অঙ্গীকার হুবহু মিলেছে!';
-      oathMatchStatus.className = 'match-status valid';
-      btnStep3Next.disabled = false;
+    const isComplete = (correctCount === rawWords.length && userWords.length === rawWords.length);
+    const pct = Math.min(100, Math.round((correctCount / rawWords.length) * 100));
+
+    if (isComplete) {
+      status.textContent = '✓ ১০০% হুবহু মিলেছে!';
+      status.style.color = '#10b981';
+      btn.disabled = false;
+      if (typoHelper) {
+        typoHelper.className = 'typo-helper success';
+        typoHelper.textContent = '✓ চমৎকার! সম্পূর্ণ অঙ্গীকার সফলভাবে নির্ভুল টাইপ করেছেন।';
+      }
     } else {
-      const percent = Math.min(99, Math.round((matchedWords / refWords.length) * 100));
-      oathMatchStatus.textContent = `মিল: ${percent}% (${matchedWords}/${refWords.length} শব্দ সঠিক)`;
-      oathMatchStatus.className = 'match-status invalid';
-      btnStep3Next.disabled = true;
+      btn.disabled = true;
+      status.textContent = `অগ্রগতি: ${pct}% (${correctCount}/${rawWords.length} শব্দ সঠিক)`;
+      status.style.color = pct > 75 ? '#f59e0b' : '#ef4444';
+
+      if (firstError && typoHelper) {
+        typoHelper.className = 'typo-helper error';
+        typoHelper.textContent = `❌ বানান ভুল (#${firstError.index}): "${firstError.typed}" — সঠিক বানান হতে হবে: "${firstError.expected}"`;
+      } else if (typoHelper) {
+        if (userWords.length > 0) {
+          typoHelper.className = 'typo-helper success';
+          typoHelper.textContent = `✍️ টাইপ করতে থাকুন... (${correctCount}/${rawWords.length} শব্দ ঠিক আছে)`;
+        } else {
+          typoHelper.className = 'typo-helper';
+          typoHelper.textContent = '';
+        }
+      }
     }
   });
 
-  btnStep3Next.onclick = () => goToStep(4);
+  btn.onclick = () => goToStep(4);
 }
 
 // -------------------------------------------------------------
@@ -435,16 +499,22 @@ function initStep7Cost() {
 }
 
 // -------------------------------------------------------------
-// STEP 8: REVERSE COGNITIVE TEST (NORMALIZED)
+// STEP 8: REVERSE COGNITIVE TEST
 // -------------------------------------------------------------
 function initStep8Reverse() {
   const reverseInput = document.getElementById('reverseInput');
   const btnStep8Next = document.getElementById('btnStep8Next');
-  const expectedText = document.getElementById('reverseExpectedText').textContent;
-  const normExpected = normalizeBengali(expectedText);
+
+  function cleanStr(s) {
+    return s.toLowerCase().replace(/[^a-z0-9\u0980-\u09FF]/g, '').trim();
+  }
+
+  const expected1 = cleanStr("success to keys are patience and focus");
+  const expected2 = cleanStr("চাবিকাঠি সফলতার একাগ্রতাই এবং ধৈর্য");
 
   reverseInput.addEventListener('input', () => {
-    if (normalizeBengali(reverseInput.value) === normExpected) {
+    const userVal = cleanStr(reverseInput.value);
+    if (userVal === expected1 || userVal === expected2) {
       btnStep8Next.disabled = false;
       reverseInput.style.borderColor = '#10b981';
     } else {

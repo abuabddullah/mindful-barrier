@@ -3,14 +3,7 @@
  */
 
 const DEFAULT_BLOCKED_DOMAINS = [
-  'facebook.com',
-  'youtube.com',
-  'instagram.com',
-  'linkedin.com',
-  'twitter.com',
-  'x.com',
-  'tiktok.com',
-  'reddit.com'
+  'facebook.com'
 ];
 
 // Initialize default storage on install

@@ -24,10 +24,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnTriggerDeactivate = document.getElementById('btnTriggerDeactivate');
 
   // Load from chrome.storage
-  let { blockedDomains = [], stats = {} } = await chrome.storage.local.get([
+  let { blockedDomains = ['facebook.com'], stats = {} } = await chrome.storage.local.get([
     'blockedDomains',
     'stats'
   ]);
+
+  // Ensure initial default is ONLY facebook.com
+  const defaultResetKey = 'mb_facebook_only_default_v1';
+  if (!localStorage.getItem(defaultResetKey)) {
+    blockedDomains = ['facebook.com'];
+    await chrome.storage.local.set({ blockedDomains });
+    localStorage.setItem(defaultResetKey, 'true');
+  }
 
   statBlocked.textContent = (stats.totalBlockedAttempts || 0).toLocaleString('bn-BD');
   statSaved.textContent = (stats.totalAborted || 0).toLocaleString('bn-BD');

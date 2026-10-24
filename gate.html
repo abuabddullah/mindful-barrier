@@ -83,15 +83,21 @@
         <div class="step-icon">📜</div>
         <h2>ধাপ ৩: অ্যান্টি-ডোপামিন অঙ্গীকারনামা</h2>
         <p class="step-desc">
-          নিচের অঙ্গীকারনামাটি হুবহু দেখে দেখে নিচের বাক্সে টাইপ করুন।
+          সহজে কীবোর্ডে টাইপ করার জন্য নিচের অঙ্গীকারটি হুবহু টাইপ করুন (বাংলা অর্থ নিচে দেওয়া হলো):
         </p>
         <div class="oath-box" id="oathReferenceText">
-          আমি সচেতনভাবে জানি সোশ্যাল মিডিয়ার অ্যালগরিদম আমার মূল্যবান সময় ও মনোযোগ চুরি করার জন্য তৈরি। আমি আমার
-          জীবনের নিয়ন্ত্রণ অন্য কারো হাতে তুলে দেব না।
+          I consciously acknowledge that social media algorithms are designed to hijack my time. I will not lose control
+          of my life.
+        </div>
+        <div class="oath-meaning" style="font-size: 13px; color: #94a3b8; margin: 4px 0 10px 0; font-style: italic;">
+          (বাংলা: "আমি সচেতনভাবে জানি সোশ্যাল মিডিয়ার অ্যালগরিদম আমার মূল্যবান সময় ও লক্ষ্য নষ্ট করার জন্য তৈরি। আমি
+          আমার জীবনের নিয়ন্ত্রণ হারাব না।")
         </div>
         <div class="textarea-wrapper">
-          <textarea id="oathInputText" placeholder="উপরের অঙ্গীকারটি এখানে হুবহু টাইপ করুন..." rows="3"></textarea>
-          <div id="oathMatchStatus" class="match-status">অপেক্ষমান...</div>
+          <textarea id="oathInputText" placeholder="Type here: I consciously acknowledge that social media..."
+            rows="3"></textarea>
+          <div id="typoHelper" class="typo-helper"></div>
+          <div id="oathMatchStatus" class="match-status">অপেক্ষমান... (0%)</div>
         </div>
         <button id="btnStep3Next" class="btn-primary" disabled>অঙ্গীকার নিশ্চিত করুন</button>
       </section>
@@ -198,14 +204,15 @@
           সাবকনশাস অভ্যাসের জড়তা কাটাতে নিচের বিপরীত শব্দগুচ্ছটি হুবহু টাইপ করুন:
         </p>
         <div class="reverse-prompt" id="reverseTargetText">
-          ধৈর্য এবং একাগ্রতাই সফলতার চাবিকাঠি
+          focus and patience are keys to success
         </div>
         <div class="reverse-hint">
           উল্টো করে টাইপ করুন (ডান থেকে বামে শব্দ সাজিয়ে):
-          <strong id="reverseExpectedText">চাবিকাঠি সফলতার একাগ্রতাই এবং ধৈর্য</strong>
+          <strong id="reverseExpectedText">success to keys are patience and focus</strong>
         </div>
         <div class="textarea-wrapper">
-          <input type="text" id="reverseInput" placeholder="এখানে টাইপ করুন..." class="single-line-input">
+          <input type="text" id="reverseInput" placeholder="এখানে টাইপ করুন: success to keys are..."
+            class="single-line-input">
         </div>
         <button id="btnStep8Next" class="btn-primary" disabled>টেস্ট সম্পন্ন করুন</button>
       </section>

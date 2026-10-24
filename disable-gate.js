@@ -156,46 +156,115 @@ relapseReason.addEventListener('input', () => {
 btnStep2Next.onclick = () => goToStep(3);
 
 // -------------------------------------------------------------
-// STEP 3: RELAPSE OATH (NORMALIZED & TOKENIZED)
+// STEP 3: RELAPSE OATH (LIVE COLOR-CODED TYPING & ERROR HIGHLIGHTER)
 // -------------------------------------------------------------
 function initStep3Oath() {
   const input = document.getElementById('relapseOathInput');
-  const ref = document.getElementById('relapseOathRef').textContent;
+  const refBox = document.getElementById('relapseOathRef');
   const status = document.getElementById('oathMatchStatus');
+  const typoHelper = document.getElementById('typoHelper');
   const btn = document.getElementById('btnStep3Next');
 
-  const normRef = normalizeBengali(ref);
-  const refWords = normRef.split(' ').filter(Boolean);
+  const engTarget = "I consciously admit defeat to social media addiction and I am disabling this protection to waste my valuable time";
+  const rawWords = engTarget.split(' ');
+
+  function cleanWord(w) {
+    return w.toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+
+  // Populate reference box with interactive spans
+  function renderReferenceSpans() {
+    refBox.innerHTML = '';
+    rawWords.forEach((word, idx) => {
+      const span = document.createElement('span');
+      span.className = 'oath-word';
+      span.id = `oath-w-${idx}`;
+      span.textContent = word;
+      refBox.appendChild(span);
+    });
+  }
+
+  renderReferenceSpans();
 
   input.addEventListener('input', () => {
-    const normInput = normalizeBengali(input.value);
+    const userRaw = input.value;
+    const userWords = userRaw.trim().split(/\s+/).filter(Boolean);
 
-    if (normInput === normRef) {
-      status.textContent = '✓ স্বীকারোক্তি মিলেছে';
-      status.style.color = '#ef4444';
-      btn.disabled = false;
-      return;
-    }
+    let firstError = null;
+    let correctCount = 0;
 
-    const inWords = normInput.split(' ').filter(Boolean);
-    let matched = 0;
-    for (let i = 0; i < inWords.length && i < refWords.length; i++) {
-      if (inWords[i] === refWords[i]) {
-        matched++;
+    rawWords.forEach((targetWord, idx) => {
+      const span = document.getElementById(`oath-w-${idx}`);
+      if (!span) return;
+
+      const cleanTarget = cleanWord(targetWord);
+
+      if (idx < userWords.length) {
+        const cleanUser = cleanWord(userWords[idx]);
+
+        if (cleanUser === cleanTarget) {
+          span.className = 'oath-word correct';
+          correctCount++;
+        } else {
+          span.className = 'oath-word error';
+          if (!firstError) {
+            firstError = {
+              typed: userWords[idx],
+              expected: targetWord,
+              index: idx + 1
+            };
+          }
+        }
+      } else if (idx === userWords.length && userRaw.endsWith(' ')) {
+        span.className = 'oath-word current';
+      } else if (idx === userWords.length - 1 && !userRaw.endsWith(' ')) {
+        // currently typing this word
+        const cleanUser = cleanWord(userWords[idx]);
+        if (cleanTarget.startsWith(cleanUser)) {
+          span.className = 'oath-word current';
+        } else {
+          span.className = 'oath-word error';
+          if (!firstError) {
+            firstError = {
+              typed: userWords[idx],
+              expected: targetWord,
+              index: idx + 1
+            };
+          }
+        }
       } else {
-        break;
+        span.className = 'oath-word'; // pending
       }
-    }
+    });
 
-    if (matched === refWords.length && inWords.length === refWords.length) {
-      status.textContent = '✓ স্বীকারোক্তি মিলেছে';
-      status.style.color = '#ef4444';
+    const isComplete = (correctCount === rawWords.length && userWords.length === rawWords.length);
+    const pct = Math.min(100, Math.round((correctCount / rawWords.length) * 100));
+
+    if (isComplete) {
+      status.textContent = '✓ ১০০% হুবহু মিলেছে!';
+      status.style.color = '#10b981';
       btn.disabled = false;
+      if (typoHelper) {
+        typoHelper.className = 'typo-helper success';
+        typoHelper.textContent = '✓ চমৎকার! সম্পূর্ণ স্বীকারোক্তি সফলভাবে নির্ভুল টাইপ করেছেন।';
+      }
     } else {
-      const pct = Math.min(99, Math.round((matched / refWords.length) * 100));
-      status.textContent = `মিল: ${pct}% (${matched}/${refWords.length} শব্দ সঠিক)`;
-      status.style.color = '#94a3b8';
       btn.disabled = true;
+      status.textContent = `অগ্রগতি: ${pct}% (${correctCount}/${rawWords.length} শব্দ সঠিক)`;
+      status.style.color = pct > 75 ? '#f59e0b' : '#ef4444';
+
+      if (firstError && typoHelper) {
+        typoHelper.className = 'typo-helper error';
+        typoHelper.textContent = `❌ বানান ভুল (#${firstError.index}): "${firstError.typed}" — সঠিক বানান হতে হবে: "${firstError.expected}"`;
+      } else if (typoHelper) {
+        if (userWords.length > 0) {
+          typoHelper.className = 'typo-helper success';
+          typoHelper.textContent = `✍️ টাইপ করতে থাকুন... (${correctCount}/${rawWords.length} শব্দ ঠিক আছে)`;
+        } else {
+          typoHelper.className = 'typo-helper';
+          typoHelper.textContent = '';
+        }
+      }
     }
   });
 

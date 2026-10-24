@@ -90,14 +90,23 @@
       <section id="step3" class="step-pane">
         <div class="step-icon">⚖️</div>
         <h2>ধাপ ৩: আত্মসমর্পণের স্বীকারোক্তি</h2>
-        <p class="step-desc">নিচের স্বীকারোক্তিটি দেখে দেখে হুবহু টাইপ করুন:</p>
+        <p class="step-desc">
+          কীবোর্ডে সহজে টাইপ করার জন্য নিচের ইংরেজি স্বীকারোক্তিটি দেখে দেখে হুবহু টাইপ করুন (বাংলা অর্থ নিচে দেওয়া
+          হলো):
+        </p>
         <div class="oath-box" id="relapseOathRef">
-          আমি সচেতনভাবে স্বীকার করছি যে আমি সোশ্যাল মিডিয়ার আসক্তির কাছে পরাজিত হচ্ছি এবং আমার জীবনের মূল্যবান সময়
-          নষ্ট করতে এই সুরক্ষা বন্ধ করছি।
+          I consciously admit defeat to social media addiction and I am disabling this protection to waste my valuable
+          time.
+        </div>
+        <div class="oath-meaning" style="font-size: 13px; color: #94a3b8; margin: 4px 0 10px 0; font-style: italic;">
+          (বাংলা: "আমি সচেতনভাবে স্বীকার করছি যে আমি সোশ্যাল মিডিয়ার আসক্তির কাছে পরাজিত হচ্ছি এবং আমার জীবনের মূল্যবান
+          সময় নষ্ট করতে এই সুরক্ষা বন্ধ করছি।")
         </div>
         <div class="textarea-wrapper">
-          <textarea id="relapseOathInput" placeholder="উপরের স্বীকারোক্তিটি এখানে টাইপ করুন..." rows="3"></textarea>
-          <div id="oathMatchStatus" class="match-status">অপেক্ষমান...</div>
+          <textarea id="relapseOathInput"
+            placeholder="Type here: I consciously admit defeat to social media addiction..." rows="3"></textarea>
+          <div id="typoHelper" class="typo-helper"></div>
+          <div id="oathMatchStatus" class="match-status">অপেক্ষমান... (0%)</div>
         </div>
         <button id="btnStep3Next" class="btn-primary" disabled>স্বীকারোক্তি নিশ্চিত করুন</button>
       </section>

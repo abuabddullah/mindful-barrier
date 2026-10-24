@@ -337,17 +337,84 @@ textarea:focus {
   color: #f87171;
 }
 
-/* Step 3: Oath */
+/* Step 3: Oath with Real-time Color Coded Typing */
 .oath-box {
   background: rgba(30, 41, 59, 0.7);
   border: 1px dashed #64748b;
   border-radius: var(--radius-md);
   padding: 14px 18px;
-  font-size: 14px;
-  line-height: 1.6;
-  color: #f1f5f9;
-  text-align: justify;
+  font-size: 15px;
+  line-height: 1.8;
   max-width: 540px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 8px;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.oath-word {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #64748b; /* pending by default */
+  transition: all 0.2s ease;
+}
+
+.oath-word.correct {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.18);
+  font-weight: 600;
+}
+
+.oath-word.error {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.25);
+  text-decoration: underline wavy #ef4444;
+  font-weight: 700;
+  animation: shake 0.3s ease;
+}
+
+.oath-word.current {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.15);
+  border-bottom: 2px solid #38bdf8;
+}
+
+.typo-helper {
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-top: 6px;
+  text-align: left;
+  display: none;
+}
+
+.typo-helper.error {
+  display: block;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+}
+
+.typo-helper.success {
+  display: block;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #34d399;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
 }
 
 .match-status {
