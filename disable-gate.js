@@ -33,29 +33,65 @@ function normalizeBengali(str) {
     .trim();
 }
 
-// Anti-Gibberish
+// Anti-Gibberish with Vocabulary Database
+const RECOGNIZED_VOCABULARY = new Set([
+  "i", "me", "my", "we", "our", "you", "your", "he", "she", "they", "it", "this", "that",
+  "is", "am", "are", "was", "were", "be", "been", "have", "has", "had", "do", "does", "did",
+  "will", "would", "can", "could", "should", "must", "need", "want", "to", "for", "in", "on",
+  "at", "of", "with", "from", "by", "about", "because", "but", "or", "so", "if", "when", "what",
+  "why", "how", "work", "job", "client", "project", "message", "messages", "email", "emails",
+  "check", "checking", "send", "sending", "reply", "replying", "urgent", "emergency", "important",
+  "account", "login", "business", "office", "team", "meeting", "study", "exam", "research",
+  "information", "read", "reading", "post", "family", "friend", "friends", "contact", "task",
+  "tasks", "update", "help", "problem", "issue", "customer", "support", "call", "report", "file",
+  "document", "service", "link", "website", "page", "code", "dev", "design", "video", "urgent",
+  "আমি", "আমার", "আমাকে", "আমরা", "আমাদের", "তুমি", "তোমার", "সে", "তার", "তারা", "তাদের",
+  "এই", "ওই", "কি", "কেন", "কীভাবে", "কারণ", "কিন্তু", "এবং", "বা", "যদি", "কাজ", "কাজের",
+  "প্রজেক্ট", "ক্লায়েন্ট", "মেসেজ", "জরুরি", "অতিজরুরি", "দরকার", "প্রয়োজন", "প্রয়োজনীয়",
+  "অফিস", "মিটিং", "পড়াশোনা", "পড়া", "পরীক্ষা", "তথ্য", "দেখা", "পাঠানো", "উত্তর", "দেওয়া",
+  "যোগাযোগ", "সমস্যা", "সমাধান", "সাহায্য", "ফাইল", "রিপোর্ট", "একাউন্ট", "পরিবার", "বন্ধু", "আত্মীয়",
+  "amar", "ami", "amader", "kaj", "kajer", "dorkar", "proyojon", "emergency", "urgent",
+  "client", "message", "msg", "uttor", "dekha", "pathano", "office", "meeting", "project"
+]);
+
 function validateMeaningfulText(text, minLen = 50) {
   const raw = text.trim();
   if (raw.length < minLen) {
     return { valid: false, message: `আরও ${minLen - raw.length} অক্ষর প্রয়োজন` };
   }
   const words = raw.split(/\s+/).filter(Boolean);
-  if (words.length < 6) {
-    return { valid: false, message: `কমপক্ষে ৬টি পৃথক শব্দ প্রয়োজন (বর্তমানে ${words.length}টি)` };
+  if (words.length < 5) {
+    return { valid: false, message: `কমপক্ষে ৫টি পৃথক শব্দ প্রয়োজন (বর্তমানে ${words.length}টি)` };
   }
+  
+  // Detect keyboard rolls
+  const keyboardRolls = /(dfh|fhd|hsd|sdh|fjs|jf|fha|hsi|sdf|dfg|fgh|ghj|hjk|jkl|asd|sfa|fas|zxc|xcv|cvb|vbn|bnm|qwe|wer|ert|rty|tyu|yui|uio|iop)/i;
+  let mashCount = 0;
   for (const w of words) {
-    if (w.length > 22) {
-      return { valid: false, message: '⚠️ কি-বোর্ড স্প্যামিং বা অবাস্তব দীর্ঘ শব্দ গ্রহণযোগ্য নয়' };
+    if (w.length >= 3 && keyboardRolls.test(w)) {
+      mashCount++;
     }
   }
-  const cleanChars = raw.toLowerCase().replace(/[\s\d\.,!?;:-]/g, '');
-  const uniqueChars = new Set([...cleanChars]);
-  if (uniqueChars.size < 8) {
-    return { valid: false, message: '⚠️ বিভিন্ন অক্ষর ব্যবহার করে একটি বাস্তব কারণ লিখুন' };
+  if (mashCount >= 2) {
+    return { valid: false, message: '🚫 কি-বোর্ড স্প্যামিং বা এলোমেলো অক্ষর চিহ্নিত হয়েছে! বাস্তব বাক্য লিখুন।' };
   }
-  if (/([a-zA-Z\u0980-\u09FF]{2,5})\1{3,}/i.test(raw)) {
-    return { valid: false, message: '⚠️ একই অক্ষরের পুনরাবৃত্তি বা স্প্যামিং গ্রহণযোগ্য নয়' };
+
+  // Count recognized dictionary words
+  let recognizedCount = 0;
+  for (const w of words) {
+    const cleanWord = w.toLowerCase().replace(/[^a-z0-9\u0980-\u09FF]/g, '');
+    if (RECOGNIZED_VOCABULARY.has(cleanWord)) {
+      recognizedCount++;
+    }
   }
+
+  if (recognizedCount < 3) {
+    return {
+      valid: false,
+      message: `🚫 কোনো বাস্তব কারণের শব্দ পাওয়া যায়নি (${recognizedCount}/৩ শব্দ স্বীকৃত)। বাস্তব কারণ লিখুন।`
+    };
+  }
+
   return { valid: true, message: '✓ কারণ গ্রহণযোগ্য হিসেবে গৃহীত হয়েছে' };
 }
 

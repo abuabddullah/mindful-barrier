@@ -48,39 +48,77 @@ function normalizeBengali(str) {
 }
 
 // -------------------------------------------------------------
-// GIBBERISH & KEYBOARD SMASHING DETECTOR
+// GIBBERISH & KEYBOARD SMASHING DETECTOR WITH DICTIONARY ENGINE
 // -------------------------------------------------------------
+const RECOGNIZED_VOCABULARY = new Set([
+  // English common words
+  "i", "me", "my", "we", "our", "you", "your", "he", "she", "they", "it", "this", "that",
+  "is", "am", "are", "was", "were", "be", "been", "have", "has", "had", "do", "does", "did",
+  "will", "would", "can", "could", "should", "must", "need", "want", "to", "for", "in", "on",
+  "at", "of", "with", "from", "by", "about", "because", "but", "or", "so", "if", "when", "what",
+  "why", "how", "work", "job", "client", "project", "message", "messages", "email", "emails",
+  "check", "checking", "send", "sending", "reply", "replying", "urgent", "emergency", "important",
+  "account", "login", "business", "office", "team", "meeting", "study", "exam", "research",
+  "information", "read", "reading", "post", "family", "friend", "friends", "contact", "task",
+  "tasks", "update", "help", "problem", "issue", "customer", "support", "call", "report", "file",
+  "document", "service", "link", "website", "page", "code", "dev", "design", "video", "urgent",
+  
+  // Bengali common words
+  "আমি", "আমার", "আমাকে", "আমরা", "আমাদের", "তুমি", "তোমার", "সে", "তার", "তারা", "তাদের",
+  "এই", "ওই", "কি", "কেন", "কীভাবে", "কারণ", "কিন্তু", "এবং", "বা", "যদি", "কাজ", "কাজের",
+  "প্রজেক্ট", "ক্লায়েন্ট", "মেসেজ", "জরুরি", "অতিজরুরি", "দরকার", "প্রয়োজন", "প্রয়োজনীয়",
+  "অফিস", "মিটিং", "পড়াশোনা", "পড়া", "পরীক্ষা", "তথ্য", "দেখা", "পাঠানো", "উত্তর", "দেওয়া",
+  "যোগাযোগ", "সমস্যা", "সমাধান", "সাহায্য", "ফাইল", "রিপোর্ট", "একাউন্ট", "পরিবার", "বন্ধু", "আত্মীয়",
+  "ফেসবুক", "ইউটিউব", "ভিডিও", "পোস্ট", "পেজ", "গ্রুপ",
+
+  // Banglish common words
+  "amar", "ami", "amader", "kaj", "kajer", "dorkar", "proyojon", "emergency", "urgent",
+  "client", "message", "msg", "uttor", "dekha", "pathano", "office", "meeting", "project",
+  "info", "tottho", "jogajog", "shomossha", "help", "account", "check"
+]);
+
 function validateMeaningfulText(text) {
   const raw = text.trim();
   if (raw.length < 35) {
     return { valid: false, message: `আরও ${35 - raw.length} অক্ষর প্রয়োজন` };
   }
 
+  // 1. Split into words
   const words = raw.split(/\s+/).filter(Boolean);
   if (words.length < 5) {
     return { valid: false, message: `কমপক্ষে ৫টি পৃথক শব্দ প্রয়োজন (বর্তমানে ${words.length}টি)` };
   }
 
-  // Reject abnormally long words (e.g. asdfasdfasdf...)
+  // 2. Detect unpronounceable keyboard mash rolls (e.g. adfhai, asfhasdi, afsdfhasi, jf, fjs)
+  const keyboardRolls = /(dfh|fhd|hsd|sdh|fjs|jf|fha|hsi|sdf|dfg|fgh|ghj|hjk|jkl|asd|sfa|fas|zxc|xcv|cvb|vbn|bnm|qwe|wer|ert|rty|tyu|yui|uio|iop)/i;
+  let mashCount = 0;
   for (const w of words) {
-    if (w.length > 22) {
-      return { valid: false, message: '⚠️ কি-বোর্ড স্প্যামিং বা অবাস্তব দীর্ঘ শব্দ গ্রহণযোগ্য নয়' };
+    if (w.length >= 3 && keyboardRolls.test(w)) {
+      mashCount++;
+    }
+  }
+  if (mashCount >= 2) {
+    return { valid: false, message: '🚫 কি-বোর্ড স্প্যামিং বা এলোমেলো অক্ষর চিহ্নিত হয়েছে! বাস্তব বাক্য লিখুন।' };
+  }
+
+  // 3. Count recognized dictionary words
+  let recognizedCount = 0;
+  for (const w of words) {
+    const cleanWord = w.toLowerCase().replace(/[^a-z0-9\u0980-\u09FF]/g, '');
+    if (RECOGNIZED_VOCABULARY.has(cleanWord)) {
+      recognizedCount++;
     }
   }
 
-  // Reject if too few unique characters (e.g. aaaaaa or asdfasdf)
-  const cleanChars = raw.toLowerCase().replace(/[\s\d\.,!?;:-]/g, '');
-  const uniqueChars = new Set([...cleanChars]);
-  if (uniqueChars.size < 8) {
-    return { valid: false, message: '⚠️ অর্থপূর্ণ বিভিন্ন অক্ষর ব্যবহার করে একটি বাস্তব কারণ লিখুন' };
+  // At least 3 words must be genuine recognized words
+  if (recognizedCount < 3) {
+    return {
+      valid: false,
+      message: `🚫 কোনো বাস্তব কাজের উদ্দেশ্য খুঁজে পাওয়া যায়নি (${recognizedCount}/৩ শব্দ স্বীকৃত)। বাস্তব কারণ লিখুন (যেমন: ক্লায়েন্টের মেসেজ, জরুরি কাজ ইত্যাদি)।`
+    };
   }
 
-  // Reject repetitive pattern loops like asdfasdfasdf or abcabcabc
-  if (/([a-zA-Z\u0980-\u09FF]{2,5})\1{3,}/i.test(raw)) {
-    return { valid: false, message: '⚠️ একই অক্ষরের পুনরাবৃত্তি বা স্প্যামিং গ্রহণযোগ্য নয়' };
-  }
-
-  return { valid: true, message: '✓ অর্থপূর্ণ কারণ হিসেবে গৃহীত হয়েছে' };
+  return { valid: true, message: '✓ অর্থপূর্ণ বাস্তব কারণ হিসেবে গৃহীত হয়েছে' };
 }
 
 // -------------------------------------------------------------
