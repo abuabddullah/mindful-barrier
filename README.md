@@ -2,14 +2,15 @@
 
   <img src="icons/icon128.png" alt="MindfulBarrier Logo" width="100" height="100" />
 
-  # 🛑 MindfulBarrier
-  ### *A High-Friction Cognitive Circuit Breaker to Permanently Cure Social Media Addiction*
+# 🛑 MindfulBarrier
 
-  [![Manifest V3](https://img.shields.io/badge/Chrome_Extension-Manifest_V3-3b82f6?style=for-the-badge&logo=googlechrome&logoColor=white)](#)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-10b981?style=for-the-badge)](#)
-  [![Privacy: 100% Local](https://img.shields.io/badge/Privacy-100%25_Offline_%26_Local-emerald?style=for-the-badge&logo=shield&logoColor=white)](#)
-  [![Platform: Chrome | Brave | Edge](https://img.shields.io/badge/Browser-Chrome_|_Brave_|_Edge-f59e0b?style=for-the-badge)](#)
-  [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-purple?style=for-the-badge)](#)
+### _A High-Friction Cognitive Circuit Breaker to Permanently Cure Social Media Addiction_
+
+[![Manifest V3](https://img.shields.io/badge/Chrome_Extension-Manifest_V3-3b82f6?style=for-the-badge&logo=googlechrome&logoColor=white)](#)
+[![License: MIT](https://img.shields.io/badge/License-MIT-10b981?style=for-the-badge)](#)
+[![Privacy: 100% Local](https://img.shields.io/badge/Privacy-100%25_Offline_%26_Local-emerald?style=for-the-badge&logo=shield&logoColor=white)](#)
+[![Platform: Chrome | Brave | Edge](https://img.shields.io/badge/Browser-Chrome_|_Brave_|_Edge-f59e0b?style=for-the-badge)](#)
+[![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-purple?style=for-the-badge)](#)
 
   <p align="center">
     <b>MindfulBarrier</b> is an open-source browser extension engineered to break unconscious muscle-memory browsing by introducing <b>10 unskippable, cognitive friction gates</b> between you and distracting platforms like Facebook, YouTube, and Instagram.
@@ -30,12 +31,12 @@
 
 ## 🌪️ The Problem & The Solution
 
-| The Dopamine Trap (Default Browsing) | The MindfulBarrier Solution |
-| :--- | :--- |
-| **Instant gratification:** Typing `f` + `Enter` opens Facebook in 0.2 seconds. | **Cognitive Friction:** 10 mandatory deliberate gates break automaticity. |
-| **Relapse via OTP:** Even after logging out, OTP login takes just 15 seconds. | **Friction Overload:** Your prefrontal cortex wakes up, killing impulsive cravings. |
-| **Infinite Scrolling:** Losing 2–3 hours without realizing where time went. | **Hard Time-Boxing:** Strict 5–15 min session with a floating live timer & instant lockout. |
-| **Effortless Uninstallation:** Addicts remove normal blockers in 1 click. | **20-Minute Delay Lock:** Removing the extension requires a 20-min cooling cooldown. |
+| The Dopamine Trap (Default Browsing)                                           | The MindfulBarrier Solution                                                                 |
+| :----------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------ |
+| **Instant gratification:** Typing `f` + `Enter` opens Facebook in 0.2 seconds. | **Cognitive Friction:** 10 mandatory deliberate gates break automaticity.                   |
+| **Relapse via OTP:** Even after logging out, OTP login takes just 15 seconds.  | **Friction Overload:** Your prefrontal cortex wakes up, killing impulsive cravings.         |
+| **Infinite Scrolling:** Losing 2–3 hours without realizing where time went.    | **Hard Time-Boxing:** Strict 5–15 min session with a floating live timer & instant lockout. |
+| **Effortless Uninstallation:** Addicts remove normal blockers in 1 click.      | **20-Minute Delay Lock:** Removing the extension requires a 20-min cooling cooldown.        |
 
 ---
 
@@ -71,10 +72,10 @@ Whenever you visit a blocked site, MindfulBarrier intercepts the navigation and 
 1. **🧘 Step 1: Mindful Breathing (30s Unskippable Cooldown)**  
    Visual breathing animation (Inhale 4s, Hold 4s, Exhale 4s) to reset your nervous system.
 2. **✍️ Step 2: Meaningful Intent Declaration**  
-   Type at least 35 characters explaining *why* you must enter. Monitored by our phonotactic & dictionary engine (no keyboard mashing allowed).
+   Type at least 35 characters explaining _why_ you must enter. Monitored by our phonotactic & dictionary engine (no keyboard mashing allowed).
 3. **📜 Step 3: Anti-Dopamine Commitment Oath**  
    Type the commitment oath with live MonkeyType-style color-coded typo detection:
-   > *"I consciously acknowledge that social media algorithms are designed to hijack my time. I will not lose control of my life."*
+   > _"I consciously acknowledge that social media algorithms are designed to hijack my time. I will not lose control of my life."_
 4. **🧠 Step 4: Cognitive Brain Activation (Math & Logic)**  
    3 dynamically generated algebraic puzzles (e.g. `(28 × 4) - 52 = ?`) to shift your brain from emotional craving to analytical reasoning.
 5. **🚶 Step 5: Physical Movement & Off-Screen Break (60s)**  
@@ -95,7 +96,7 @@ Whenever you visit a blocked site, MindfulBarrier intercepts the navigation and 
 
 ## 🛡️ Anti-Disable Architecture
 
-Most blockers fail because an addict simply goes to `chrome://extensions` and clicks **"Remove"** or flips the switch in 1 second. 
+Most blockers fail because an addict simply goes to `chrome://extensions` and clicks **"Remove"** or flips the switch in 1 second.
 
 MindfulBarrier solves this through **Windows Chrome Enterprise Policy**:
 
@@ -113,7 +114,7 @@ MindfulBarrier solves this through **Windows Chrome Enterprise Policy**:
                                                               ✅ 15-Minute Temporary Grace Window
 ```
 
-- **Lock Script (`MindfulBarrier - Lock.lnk`):** Adds the extension's ID to Chrome's `ExtensionInstallForcelist`. Chrome marks it as *"Installed by your administrator"*. The **Remove button disappears** and the **Toggle switch is disabled**.
+- **Lock Script (`MindfulBarrier - Lock.lnk`):** Adds the extension's ID to Chrome's `ExtensionInstallForcelist`. Chrome marks it as _"Installed by your administrator"_. The **Remove button disappears** and the **Toggle switch is disabled**.
 - **20-Minute Unlocker (`MindfulBarrier - 20Min Unlock.lnk`):** Need to remove it? Run the unlocker, minimize the window, and go back to your work. Exactly 20 minutes later, it grants a 15-minute temporary unlock window!
 
 ---
@@ -149,7 +150,7 @@ MindfulBarrier solves this through **Windows Chrome Enterprise Policy**:
 5. Select the **`mindful-barrier`** directory.
 6. Pin **MindfulBarrier** (🛑) to your browser toolbar!
 
-> **💡 Pro-Tip:** Click *Details* on MindfulBarrier in `chrome://extensions` and toggle **"Allow in Incognito"** to prevent incognito bypassing.
+> **💡 Pro-Tip:** Click _Details_ on MindfulBarrier in `chrome://extensions` and toggle **"Allow in Incognito"** to prevent incognito bypassing.
 
 ---
 
