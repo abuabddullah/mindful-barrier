@@ -1,12 +1,12 @@
 /**
  * MindfulBarrier - 10-Step Friction Gate Engine
+ * Enhanced with Bengali Unicode Normalization & Anti-Gibberish Validation
  */
 
 // Parse query params
 const urlParams = new URLSearchParams(window.location.search);
 const targetUrl = urlParams.get('target') || 'https://facebook.com';
 const targetDomain = urlParams.get('domain') || 'facebook.com';
-const isExpired = urlParams.get('expired') === 'true';
 
 // DOM Elements
 const targetDomainBadge = document.getElementById('targetDomainBadge');
@@ -20,27 +20,81 @@ let currentStep = 1;
 let selectedDurationMinutes = 5;
 let isTabActive = true;
 
-// Set target domain badge
 if (targetDomainBadge) {
   targetDomainBadge.textContent = targetDomain;
 }
 
 // -------------------------------------------------------------
+// BENGALI UNICODE NORMALIZATION UTILITY
+// -------------------------------------------------------------
+function normalizeBengali(str) {
+  if (!str) return '';
+  return str
+    .normalize('NFC')
+    // Remove zero-width spaces, joiners, non-joiners & BOM
+    .replace(/[\u200B-\u200D\uFEFF]/g, '')
+    // Normalize composite Nukta combinations into atomic characters:
+    // য (U+09AF) + ় (U+09BC) -> য় (U+09DF)
+    .replace(/\u09AF\u09BC/g, '\u09DF')
+    // ড (U+09A1) + ় (U+09BC) -> ড় (U+09DC)
+    .replace(/\u09A1\u09BC/g, '\u09DC')
+    // ঢ (U+09A2) + ় (U+09BC) -> ঢ় (U+09DD)
+    .replace(/\u09A2\u09BC/g, '\u09DD')
+    // Strip punctuation to avoid typing traps (দাঁড়ি, কমা, ডট)
+    .replace(/[।\.,!?;:\'\"\-]/g, '')
+    // Collapse all spaces into single space
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// -------------------------------------------------------------
+// GIBBERISH & KEYBOARD SMASHING DETECTOR
+// -------------------------------------------------------------
+function validateMeaningfulText(text) {
+  const raw = text.trim();
+  if (raw.length < 35) {
+    return { valid: false, message: `আরও ${35 - raw.length} অক্ষর প্রয়োজন` };
+  }
+
+  const words = raw.split(/\s+/).filter(Boolean);
+  if (words.length < 5) {
+    return { valid: false, message: `কমপক্ষে ৫টি পৃথক শব্দ প্রয়োজন (বর্তমানে ${words.length}টি)` };
+  }
+
+  // Reject abnormally long words (e.g. asdfasdfasdf...)
+  for (const w of words) {
+    if (w.length > 22) {
+      return { valid: false, message: '⚠️ কি-বোর্ড স্প্যামিং বা অবাস্তব দীর্ঘ শব্দ গ্রহণযোগ্য নয়' };
+    }
+  }
+
+  // Reject if too few unique characters (e.g. aaaaaa or asdfasdf)
+  const cleanChars = raw.toLowerCase().replace(/[\s\d\.,!?;:-]/g, '');
+  const uniqueChars = new Set([...cleanChars]);
+  if (uniqueChars.size < 8) {
+    return { valid: false, message: '⚠️ অর্থপূর্ণ বিভিন্ন অক্ষর ব্যবহার করে একটি বাস্তব কারণ লিখুন' };
+  }
+
+  // Reject repetitive pattern loops like asdfasdfasdf or abcabcabc
+  if (/([a-zA-Z\u0980-\u09FF]{2,5})\1{3,}/i.test(raw)) {
+    return { valid: false, message: '⚠️ একই অক্ষরের পুনরাবৃত্তি বা স্প্যামিং গ্রহণযোগ্য নয়' };
+  }
+
+  return { valid: true, message: '✓ অর্থপূর্ণ কারণ হিসেবে গৃহীত হয়েছে' };
+}
+
+// -------------------------------------------------------------
 // ANTI-CHEAT MECHANISMS
 // -------------------------------------------------------------
-
-// Disable paste globally on this page (User must type deliberately)
 document.addEventListener('paste', (e) => {
   e.preventDefault();
-  alert('🚫 কপি-পেস্ট নিষিদ্ধ! অনুগ্রহ করে নিজে হাত দিয়ে টাইপ করুন।');
+  alert('🚫 কপি-পেস্ট সম্পূর্ণ নিষ্ক্রিয়! নিজে হাত দিয়ে টাইপ করুন।');
 });
 
-// Disable context menu
 document.addEventListener('contextmenu', (e) => {
   e.preventDefault();
 });
 
-// Detect tab blur / visibility change (Stops users from switching tabs during timers)
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     isTabActive = false;
@@ -53,7 +107,6 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-// Global Cancel / Abort actions
 function abortAndCloseTab() {
   chrome.runtime.sendMessage({ type: 'ABORT_SESSION', domain: targetDomain }, () => {
     window.close();
@@ -66,7 +119,6 @@ document.getElementById('btnAbortHero').addEventListener('click', abortAndCloseT
 // -------------------------------------------------------------
 // STEP NAVIGATION CONTROLLER
 // -------------------------------------------------------------
-
 const stepTitles = [
   'ধাপ ১: শ্বাস নিন ও শান্ত হোন',
   'ধাপ ২: প্রবেশের কারণ স্পষ্টভাবে লিখুন',
@@ -83,23 +135,19 @@ const stepTitles = [
 function goToStep(stepNumber) {
   currentStep = stepNumber;
 
-  // Update Header progress
   stepCounterText.textContent = `${stepNumber} / 10`;
   stepTitleText.textContent = stepTitles[stepNumber - 1];
   progressBarFill.style.width = `${stepNumber * 10}%`;
 
-  // Hide all step panes
   document.querySelectorAll('.step-pane').forEach((pane) => {
     pane.classList.remove('active');
   });
 
-  // Activate current pane
   const currentPane = document.getElementById(`step${stepNumber}`);
   if (currentPane) {
     currentPane.classList.add('active');
   }
 
-  // Trigger step initialization
   initStep(stepNumber);
 }
 
@@ -151,12 +199,11 @@ function startStep1Cooldown() {
   if (step1Interval) clearInterval(step1Interval);
 
   step1Interval = setInterval(() => {
-    if (!isTabActive) return; // Pause timer if user leaves tab
+    if (!isTabActive) return;
 
     step1SecondsLeft--;
     phaseElapsed++;
 
-    // Breathing text cycle
     if (phaseElapsed >= breathingPhases[phaseIdx].duration) {
       phaseElapsed = 0;
       phaseIdx = (phaseIdx + 1) % breathingPhases.length;
@@ -179,18 +226,25 @@ function startStep1Cooldown() {
 }
 
 // -------------------------------------------------------------
-// STEP 2: WRITTEN JUSTIFICATION
+// STEP 2: WRITTEN JUSTIFICATION (WITH ANTI-GIBBERISH)
 // -------------------------------------------------------------
 const justificationText = document.getElementById('justificationText');
 const charCount = document.getElementById('charCount');
+const justificationFeedback = document.getElementById('justificationFeedback');
 const btnStep2Next = document.getElementById('btnStep2Next');
 
 justificationText.addEventListener('input', () => {
-  const len = justificationText.value.trim().length;
-  charCount.textContent = len;
-  if (len >= 40) {
+  const text = justificationText.value;
+  charCount.textContent = text.trim().length;
+
+  const result = validateMeaningfulText(text);
+  justificationFeedback.textContent = result.message;
+
+  if (result.valid) {
+    justificationFeedback.className = 'justification-feedback valid';
     btnStep2Next.disabled = false;
   } else {
+    justificationFeedback.className = 'justification-feedback';
     btnStep2Next.disabled = true;
   }
 });
@@ -198,31 +252,48 @@ justificationText.addEventListener('input', () => {
 btnStep2Next.onclick = () => goToStep(3);
 
 // -------------------------------------------------------------
-// STEP 3: OATH VERIFICATION
+// STEP 3: OATH VERIFICATION (NORMALIZED & TOKENIZED)
 // -------------------------------------------------------------
 function initStep3Oath() {
   const oathInputText = document.getElementById('oathInputText');
   const oathMatchStatus = document.getElementById('oathMatchStatus');
   const btnStep3Next = document.getElementById('btnStep3Next');
-  const referenceText = document.getElementById('oathReferenceText').textContent.trim();
+  const referenceText = document.getElementById('oathReferenceText').textContent;
 
-  // Normalize Bengali spaces/punctuation for reliable matching
-  function clean(str) {
-    return str.replace(/\s+/g, ' ').trim();
-  }
+  const normRef = normalizeBengali(referenceText);
+  const refWords = normRef.split(' ').filter(Boolean);
 
   oathInputText.addEventListener('input', () => {
-    const inputClean = clean(oathInputText.value);
-    const refClean = clean(referenceText);
+    const normInput = normalizeBengali(oathInputText.value);
 
-    if (inputClean === refClean) {
+    // Exact match test
+    if (normInput === normRef) {
+      oathMatchStatus.textContent = '✓ অঙ্গীকার হুবহু মিলেছে!';
+      oathMatchStatus.className = 'match-status valid';
+      btnStep3Next.disabled = false;
+      return;
+    }
+
+    // Word-by-word tokenized progress calculation
+    const inputWords = normInput.split(' ').filter(Boolean);
+    let matchedWords = 0;
+
+    for (let i = 0; i < inputWords.length && i < refWords.length; i++) {
+      if (inputWords[i] === refWords[i]) {
+        matchedWords++;
+      } else {
+        break; // Stop at first mismatch
+      }
+    }
+
+    // If all words matched
+    if (matchedWords === refWords.length && inputWords.length === refWords.length) {
       oathMatchStatus.textContent = '✓ অঙ্গীকার হুবহু মিলেছে!';
       oathMatchStatus.className = 'match-status valid';
       btnStep3Next.disabled = false;
     } else {
-      const matchLength = [...inputClean].filter((char, i) => char === refClean[i]).length;
-      const percent = Math.min(100, Math.round((matchLength / refClean.length) * 100));
-      oathMatchStatus.textContent = `মিল: ${percent}% (হুবহু মিলতে হবে)`;
+      const percent = Math.min(99, Math.round((matchedWords / refWords.length) * 100));
+      oathMatchStatus.textContent = `মিল: ${percent}% (${matchedWords}/${refWords.length} শব্দ সঠিক)`;
       oathMatchStatus.className = 'match-status invalid';
       btnStep3Next.disabled = true;
     }
@@ -237,15 +308,13 @@ function initStep3Oath() {
 let mathSolutions = [0, 0, 0];
 
 function generateMathProblems() {
-  // Problem 1: (a * b) - c
-  const a = Math.floor(Math.random() * 20) + 15; // 15-34
-  const b = Math.floor(Math.random() * 6) + 4;   // 4-9
-  const c = Math.floor(Math.random() * 40) + 20; // 20-59
+  const a = Math.floor(Math.random() * 20) + 15;
+  const b = Math.floor(Math.random() * 6) + 4;
+  const c = Math.floor(Math.random() * 40) + 20;
   mathSolutions[0] = (a * b) - c;
   document.getElementById('mathQ1').textContent = `(${a} × ${b}) - ${c} =`;
 
-  // Problem 2: (d + e) / f
-  const f = Math.floor(Math.random() * 5) + 3; // 3-7
+  const f = Math.floor(Math.random() * 5) + 3;
   const mult = Math.floor(Math.random() * 30) + 20;
   const total = f * mult;
   const d = Math.floor(total * 0.6);
@@ -253,15 +322,13 @@ function generateMathProblems() {
   mathSolutions[1] = mult;
   document.getElementById('mathQ2').textContent = `(${d} + ${e}) ÷ ${f} =`;
 
-  // Problem 3: (g * h) - i
   const g = Math.floor(Math.random() * 15) + 12;
   const h = Math.floor(Math.random() * 5) + 4;
   const i = Math.floor(Math.random() * 30) + 10;
   mathSolutions[2] = (g * h) - i;
   document.getElementById('mathQ3').textContent = `(${g} × ${h}) - ${i} =`;
 
-  // Hook validation
-  ['mathA1', 'mathA2', 'mathA3'].forEach((id, idx) => {
+  ['mathA1', 'mathA2', 'mathA3'].forEach((id) => {
     const input = document.getElementById(id);
     input.value = '';
     input.addEventListener('input', validateMath);
@@ -291,11 +358,7 @@ function validateMath() {
   status3.style.color = ok3 ? '#10b981' : '#f43f5e';
 
   const btnStep4Next = document.getElementById('btnStep4Next');
-  if (ok1 && ok2 && ok3) {
-    btnStep4Next.disabled = false;
-  } else {
-    btnStep4Next.disabled = true;
-  }
+  btnStep4Next.disabled = !(ok1 && ok2 && ok3);
 }
 
 document.getElementById('btnStep4Next').onclick = () => goToStep(5);
@@ -357,7 +420,6 @@ function initStep7Cost() {
 
   function calculateLoss() {
     const rate = parseFloat(hourlyRateInput.value) || 500;
-    // 1 hour a day * 365 days * hourlyRate
     const yearlyLoss = Math.round(rate * 365);
     yearlyLossText.textContent = `৳ ${yearlyLoss.toLocaleString('bn-BD')}`;
   }
@@ -373,15 +435,16 @@ function initStep7Cost() {
 }
 
 // -------------------------------------------------------------
-// STEP 8: REVERSE COGNITIVE TEST
+// STEP 8: REVERSE COGNITIVE TEST (NORMALIZED)
 // -------------------------------------------------------------
 function initStep8Reverse() {
   const reverseInput = document.getElementById('reverseInput');
   const btnStep8Next = document.getElementById('btnStep8Next');
-  const expectedText = document.getElementById('reverseExpectedText').textContent.trim();
+  const expectedText = document.getElementById('reverseExpectedText').textContent;
+  const normExpected = normalizeBengali(expectedText);
 
   reverseInput.addEventListener('input', () => {
-    if (reverseInput.value.trim() === expectedText) {
+    if (normalizeBengali(reverseInput.value) === normExpected) {
       btnStep8Next.disabled = false;
       reverseInput.style.borderColor = '#10b981';
     } else {
@@ -418,29 +481,20 @@ function startStep10FinalCountdown() {
       clearInterval(countdownInterval);
       finalCountdownElem.textContent = '✓';
 
-      // Unlock domain in background
       chrome.runtime.sendMessage(
         {
           type: 'UNLOCK_DOMAIN',
           domain: targetDomain,
           durationMinutes: selectedDurationMinutes
         },
-        (response) => {
-          if (response && response.success) {
-            // Smoothly redirect to actual target URL
-            window.location.href = targetUrl;
-          } else {
-            // Fallback
-            window.location.href = targetUrl;
-          }
+        () => {
+          window.location.href = targetUrl;
         }
       );
     }
   }, 1000);
 }
 
-// Start with Step 1
 window.addEventListener('DOMContentLoaded', () => {
   goToStep(1);
 });
-

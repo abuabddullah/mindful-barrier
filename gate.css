@@ -305,10 +305,31 @@ textarea:focus {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
+.char-counter-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.justification-feedback {
+  font-size: 12px;
+  color: #f87171;
+  font-weight: 500;
+  text-align: left;
+  transition: color 0.2s;
+}
+
+.justification-feedback.valid {
+  color: #34d399;
+}
+
 .char-counter {
   font-size: 12px;
   color: var(--text-muted);
   text-align: right;
+  white-space: nowrap;
 }
 
 .no-paste-hint {

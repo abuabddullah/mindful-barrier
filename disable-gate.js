@@ -1,5 +1,6 @@
 /**
  * MindfulBarrier - 10-Step Deactivation Engine
+ * Enhanced with Bengali Unicode Normalization & Anti-Gibberish Validation
  */
 
 let currentStep = 1;
@@ -17,6 +18,46 @@ const stepTitles = [
   'ধাপ ৯: সর্বোচ্চ ১৫ মিনিটের জরুরি গ্রেস',
   'ধাপ ১০: শেষ সুযোগ — নিজেকে ফিরিয়ে নেওয়ার'
 ];
+
+// Bengali Normalization
+function normalizeBengali(str) {
+  if (!str) return '';
+  return str
+    .normalize('NFC')
+    .replace(/[\u200B-\u200D\uFEFF]/g, '')
+    .replace(/\u09AF\u09BC/g, '\u09DF')
+    .replace(/\u09A1\u09BC/g, '\u09DC')
+    .replace(/\u09A2\u09BC/g, '\u09DD')
+    .replace(/[।\.,!?;:\'\"\-]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Anti-Gibberish
+function validateMeaningfulText(text, minLen = 50) {
+  const raw = text.trim();
+  if (raw.length < minLen) {
+    return { valid: false, message: `আরও ${minLen - raw.length} অক্ষর প্রয়োজন` };
+  }
+  const words = raw.split(/\s+/).filter(Boolean);
+  if (words.length < 6) {
+    return { valid: false, message: `কমপক্ষে ৬টি পৃথক শব্দ প্রয়োজন (বর্তমানে ${words.length}টি)` };
+  }
+  for (const w of words) {
+    if (w.length > 22) {
+      return { valid: false, message: '⚠️ কি-বোর্ড স্প্যামিং বা অবাস্তব দীর্ঘ শব্দ গ্রহণযোগ্য নয়' };
+    }
+  }
+  const cleanChars = raw.toLowerCase().replace(/[\s\d\.,!?;:-]/g, '');
+  const uniqueChars = new Set([...cleanChars]);
+  if (uniqueChars.size < 8) {
+    return { valid: false, message: '⚠️ বিভিন্ন অক্ষর ব্যবহার করে একটি বাস্তব কারণ লিখুন' };
+  }
+  if (/([a-zA-Z\u0980-\u09FF]{2,5})\1{3,}/i.test(raw)) {
+    return { valid: false, message: '⚠️ একই অক্ষরের পুনরাবৃত্তি বা স্প্যামিং গ্রহণযোগ্য নয়' };
+  }
+  return { valid: true, message: '✓ কারণ গ্রহণযোগ্য হিসেবে গৃহীত হয়েছে' };
+}
 
 // Anti-Cheat (no paste, no contextmenu)
 document.addEventListener('paste', (e) => {
@@ -99,40 +140,62 @@ function startStep1Cooldown() {
 }
 
 // -------------------------------------------------------------
-// STEP 2: RELAPSE REASON (60 chars)
+// STEP 2: RELAPSE REASON (WITH ANTI-GIBBERISH)
 // -------------------------------------------------------------
 const relapseReason = document.getElementById('relapseReason');
 const charCount = document.getElementById('charCount');
 const btnStep2Next = document.getElementById('btnStep2Next');
 
 relapseReason.addEventListener('input', () => {
-  const len = relapseReason.value.trim().length;
-  charCount.textContent = len;
-  btnStep2Next.disabled = len < 60;
+  const text = relapseReason.value;
+  charCount.textContent = text.trim().length;
+
+  const result = validateMeaningfulText(text, 50);
+  btnStep2Next.disabled = !result.valid;
 });
 btnStep2Next.onclick = () => goToStep(3);
 
 // -------------------------------------------------------------
-// STEP 3: RELAPSE OATH
+// STEP 3: RELAPSE OATH (NORMALIZED & TOKENIZED)
 // -------------------------------------------------------------
 function initStep3Oath() {
   const input = document.getElementById('relapseOathInput');
-  const ref = document.getElementById('relapseOathRef').textContent.trim();
+  const ref = document.getElementById('relapseOathRef').textContent;
   const status = document.getElementById('oathMatchStatus');
   const btn = document.getElementById('btnStep3Next');
 
-  input.addEventListener('input', () => {
-    const cleanIn = input.value.replace(/\s+/g, ' ').trim();
-    const cleanRef = ref.replace(/\s+/g, ' ').trim();
+  const normRef = normalizeBengali(ref);
+  const refWords = normRef.split(' ').filter(Boolean);
 
-    if (cleanIn === cleanRef) {
+  input.addEventListener('input', () => {
+    const normInput = normalizeBengali(input.value);
+
+    if (normInput === normRef) {
+      status.textContent = '✓ স্বীকারোক্তি মিলেছে';
+      status.style.color = '#ef4444';
+      btn.disabled = false;
+      return;
+    }
+
+    const inWords = normInput.split(' ').filter(Boolean);
+    let matched = 0;
+    for (let i = 0; i < inWords.length && i < refWords.length; i++) {
+      if (inWords[i] === refWords[i]) {
+        matched++;
+      } else {
+        break;
+      }
+    }
+
+    if (matched === refWords.length && inWords.length === refWords.length) {
       status.textContent = '✓ স্বীকারোক্তি মিলেছে';
       status.style.color = '#ef4444';
       btn.disabled = false;
     } else {
-      btn.disabled = true;
-      status.textContent = 'হুবহু মিলতে হবে...';
+      const pct = Math.min(99, Math.round((matched / refWords.length) * 100));
+      status.textContent = `মিল: ${pct}% (${matched}/${refWords.length} শব্দ সঠিক)`;
       status.style.color = '#94a3b8';
+      btn.disabled = true;
     }
   });
 
@@ -244,7 +307,6 @@ function startStep10Final() {
       clearInterval(interval);
       countElem.textContent = '✓';
 
-      // Grant 15 minutes emergency unlock across all default domains
       chrome.storage.local.get(['blockedDomains', 'sessions'], async ({ blockedDomains = [], sessions = {} }) => {
         const now = Date.now();
         const unlockedUntil = now + (15 * 60 * 1000);
@@ -268,8 +330,6 @@ function startStep10Final() {
   }, 1000);
 }
 
-// Auto start
 window.addEventListener('DOMContentLoaded', () => {
   goToStep(1);
 });
-

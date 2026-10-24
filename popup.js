@@ -70,12 +70,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         const currentlyChecked = card.classList.contains('checked');
 
         if (currentlyChecked) {
-          // Unchecking
-          blockedDomains = blockedDomains.filter(
-            (d) => d !== preset.domain && (!preset.altDomain || d !== preset.altDomain)
+          // Unchecking requires the 10-Step Gauntlet!
+          const confirmUncheck = confirm(
+            `⚠️ "${preset.name}"-এর সুরক্ষা সরাসরি বন্ধ করা যাবে না!\n\nআবেগী মুহূর্তে সুরক্ষা তুলে নেওয়া ঠেকাতে এটি বন্ধ করতে হলে ১০-ধাপের কগনিটিভ গেট সম্পন্ন করতে হবে।\n\nআপনি কি ১০-ধাপের ভেরিফিকেশন গেট খুলতে চান?`
           );
+          if (confirmUncheck) {
+            chrome.tabs.create({
+              url: chrome.runtime.getURL('disable-gate.html') + `?targetDomain=${encodeURIComponent(preset.domain)}`
+            });
+          }
+          return; // Prevents instant unchecking
         } else {
-          // Checking
+          // Checking is free and instant
           if (!blockedDomains.includes(preset.domain)) {
             blockedDomains.push(preset.domain);
           }
@@ -122,12 +128,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>
       `;
 
-      // Delete custom domain
+      // Delete custom domain requires 10-step gauntlet
       item.querySelector('.btn-del').addEventListener('click', async () => {
-        blockedDomains = blockedDomains.filter((d) => d !== domain);
-        await chrome.storage.local.set({ blockedDomains });
-        renderCustomList();
-        renderPresets();
+        const confirmDel = confirm(
+          `⚠️ "${domain}"-এর ব্লকিং সরাসরি সরানো যাবে না!\n\nএটি সরাতে হলে ১০-ধাপের কগনিটিভ গেট সম্পন্ন করতে হবে।\n\nআপনি কি ১০-ধাপের গেট খুলতে চান?`
+        );
+        if (confirmDel) {
+          chrome.tabs.create({
+            url: chrome.runtime.getURL('disable-gate.html') + `?targetDomain=${encodeURIComponent(domain)}`
+          });
+        }
       });
 
       customList.appendChild(item);
