@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MindfulBarrier — কগনিটিভ ফ্রিশন গেট</title>
+  <link rel="stylesheet" href="gate.css">
+</head>
+
+<body>
+  <div class="stars-bg"></div>
+  <div class="container">
+    <!-- Header -->
+    <header class="gate-header">
+      <div class="logo-badge">
+        <span class="icon">🛑</span>
+        <span class="brand">MindfulBarrier</span>
+      </div>
+      <div class="target-info">
+        <span class="target-label">টার্গেট সাইট:</span>
+        <span id="targetDomainBadge" class="domain-pill">facebook.com</span>
+      </div>
+    </header>
+
+    <!-- Progress Tracker -->
+    <div class="progress-section">
+      <div class="progress-labels">
+        <span id="stepTitleText" class="step-title">ধাপ ১: শ্বাস নিন ও শান্ত হোন</span>
+        <span id="stepCounterText" class="step-count">১ / ১০</span>
+      </div>
+      <div class="progress-bar-track">
+        <div id="progressBarFill" class="progress-bar-fill" style="width: 10%;"></div>
+      </div>
+    </div>
+
+    <!-- Warning / Tab switch alert banner -->
+    <div id="tabWarningBanner" class="warning-banner hidden">
+      ⚠️ সতর্কবার্তা: আপনি অন্য ট্যাবে চলে গিয়েছিলেন! সচেতন থাকতে টাইমার পজ করা হয়েছিল।
+    </div>
+
+    <!-- Step Cards Container -->
+    <main class="gate-card">
+      <!-- Step 1: Breath & Cooldown -->
+      <section id="step1" class="step-pane active">
+        <div class="step-icon">🧘‍♂️</div>
+        <h2>ধাপ ১: শ্বাস নিন এবং শান্ত হোন</h2>
+        <p class="step-desc">
+          আপনার ব্রেন এখন তীব্র ডোপামিনের মোহে রয়েছে। কোনো সিদ্ধান্ত নেওয়ার আগে শান্ত হোন। গভীর শ্বাস নিন এবং ছাড়ুন।
+        </p>
+        <div class="breathing-circle-wrapper">
+          <div class="breathing-circle">
+            <span id="breathingText">শ্বাস নিন...</span>
+          </div>
+        </div>
+        <div class="timer-display">
+          অপেক্ষা করুন: <span id="cooldownTimer">০০:৩০</span>
+        </div>
+        <button id="btnStep1Next" class="btn-primary" disabled>পরবর্তী ধাপে যান</button>
+      </section>
+
+      <!-- Step 2: Written Justification -->
+      <section id="step2" class="step-pane">
+        <div class="step-icon">✍️</div>
+        <h2>ধাপ ২: প্রবেশের কারণ স্পষ্টভাবে লিখুন</h2>
+        <p class="step-desc">
+          আপনি কেন এই মুহূর্তে এই সাইটে ঢুকতে চাচ্ছেন? এটি কি কোনো অতি জরুরি কাজ, নাকি নিছক একঘেয়েমি ও অভ্যাসবশত?
+          (কমপক্ষে ৪০টি অক্ষর টাইপ করুন)
+        </p>
+        <div class="textarea-wrapper">
+          <textarea id="justificationText" placeholder="আমার প্রবেশের আসল উদ্দেশ্য হলো..." rows="4"></textarea>
+          <div class="char-counter"><span id="charCount">০</span> / ৪০ অক্ষর</div>
+        </div>
+        <p class="no-paste-hint">🚫 কপি-পেস্ট সম্পূর্ণ নিষ্ক্রিয়। নিজে হাত দিয়ে টাইপ করুন।</p>
+        <button id="btnStep2Next" class="btn-primary" disabled>উদ্দেশ্য যাচাই করে এগিয়ে যান</button>
+      </section>
+
+      <!-- Step 3: Anti-Dopamine Oath -->
+      <section id="step3" class="step-pane">
+        <div class="step-icon">📜</div>
+        <h2>ধাপ ৩: অ্যান্টি-ডোপামিন অঙ্গীকারনামা</h2>
+        <p class="step-desc">
+          নিচের অঙ্গীকারনামাটি হুবহু দেখে দেখে নিচের বাক্সে টাইপ করুন।
+        </p>
+        <div class="oath-box" id="oathReferenceText">
+          আমি সচেতনভাবে জানি সোশ্যাল মিডিয়ার অ্যালগরিদম আমার মূল্যবান সময় ও মনোযোগ চুরি করার জন্য তৈরি। আমি আমার
+          জীবনের নিয়ন্ত্রণ অন্য কারো হাতে তুলে দেব না।
+        </div>
+        <div class="textarea-wrapper">
+          <textarea id="oathInputText" placeholder="উপরের অঙ্গীকারটি এখানে হুবহু টাইপ করুন..." rows="3"></textarea>
+          <div id="oathMatchStatus" class="match-status">অপেক্ষমান...</div>
+        </div>
+        <button id="btnStep3Next" class="btn-primary" disabled>অঙ্গীকার নিশ্চিত করুন</button>
+      </section>
+
+      <!-- Step 4: Math & Logic Cognitive Challenge -->
+      <section id="step4" class="step-pane">
+        <div class="step-icon">🧠</div>
+        <h2>ধাপ ৪: কগনিটিভ ব্রেন অ্যাক্টিভেশন</h2>
+        <p class="step-desc">
+          আপনার ব্রেনের অ্যানালিটিক্যাল অংশ চালু করতে নিচের ৩টি গাণিতিক হিসাব সমাধান করুন:
+        </p>
+        <div class="math-problems-list">
+          <div class="math-row">
+            <span id="mathQ1" class="math-q">(২৮ × ৪) - ৫২ =</span>
+            <input type="number" id="mathA1" class="math-input" placeholder="উত্তর">
+            <span id="mathStatus1" class="status-indicator"></span>
+          </div>
+          <div class="math-row">
+            <span id="mathQ2" class="math-q">(১৪৫ + ৯৫) ÷ ৮ =</span>
+            <input type="number" id="mathA2" class="math-input" placeholder="উত্তর">
+            <span id="mathStatus2" class="status-indicator"></span>
+          </div>
+          <div class="math-row">
+            <span id="mathQ3" class="math-q">(১৯ × ৬) - ৩৭ =</span>
+            <input type="number" id="mathA3" class="math-input" placeholder="উত্তর">
+            <span id="mathStatus3" class="status-indicator"></span>
+          </div>
+        </div>
+        <button id="btnStep4Next" class="btn-primary" disabled>হিসাব যাচাই করুন</button>
+      </section>
+
+      <!-- Step 5: Physical Movement & Off-Screen Reset -->
+      <section id="step5" class="step-pane">
+        <div class="step-icon">🚶‍♂️</div>
+        <h2>ধাপ ৫: শারীরিক সচেতনতা ও অফ-স্ক্রিন বিরতি</h2>
+        <p class="step-desc">
+          একটানা স্ক্রিনের দিকে তাকিয়ে না থেকে উঠে দাঁড়ান। এক গ্লাস পানি পান করুন অথবা ২০ ফুট দূরে জানালার দিকে ৬০
+          সেকেন্ড তাকিয়ে থাকুন।
+        </p>
+        <div class="water-break-card">
+          <div class="water-icon">💧</div>
+          <div class="physical-timer" id="physicalTimer">০১:০০</div>
+          <div class="water-instruction">শরীরকে অক্সিজেন ও বিশ্রাম দিন...</div>
+        </div>
+        <button id="btnStep5Next" class="btn-primary" disabled>আমি বিরতি নিয়েছি ও প্রস্তুত</button>
+      </section>
+
+      <!-- Step 6: Strict Time-Box Selection -->
+      <section id="step6" class="step-pane">
+        <div class="step-icon">⏱️</div>
+        <h2>ধাপ ৬: কঠোর সময়সীমা নির্ধারণ</h2>
+        <p class="step-desc">
+          কত মিনিটের জন্য ঢুকতে চান? সময় শেষ হওয়ামাত্র কোনো পূর্বাভাস ছাড়াই সাইটটি আবার হার্ড-লক হয়ে যাবে।
+        </p>
+        <div class="time-options-grid">
+          <label class="time-option selected">
+            <input type="radio" name="sessionDuration" value="5" checked>
+            <span class="time-badge">৫ মিনিট</span>
+            <span class="time-sub">(প্রস্তাবিত ও নিরাপদ)</span>
+          </label>
+          <label class="time-option">
+            <input type="radio" name="sessionDuration" value="10">
+            <span class="time-badge">১০ মিনিট</span>
+            <span class="time-sub">(সতর্কতা জরুরি)</span>
+          </label>
+          <label class="time-option">
+            <input type="radio" name="sessionDuration" value="15">
+            <span class="time-badge">১৫ মিনিট</span>
+            <span class="time-sub">(সর্বোচ্চ সীমা)</span>
+          </label>
+        </div>
+        <button id="btnStep6Next" class="btn-primary">সময়সীমা লক করুন</button>
+      </section>
+
+      <!-- Step 7: Distraction Cost Calculator -->
+      <section id="step7" class="step-pane">
+        <div class="step-icon">💸</div>
+        <h2>ধাপ ৭: অপচয় হওয়া সময়ের আর্থিক ক্ষতি</h2>
+        <p class="step-desc">
+          সোশ্যাল মিডিয়ায় দৈনিক মাত্র ১ ঘণ্টা অপচয় মানে প্রতি মাসে ৩০ ঘণ্টা এবং বছরে পুরো ১৫ দিনের জাগরণ সময় নষ্ট।
+        </p>
+        <div class="cost-calculator-card">
+          <div class="hourly-input-row">
+            <label for="hourlyRate">আপনার ১ ঘণ্টার কাজের আনুমানিক মূল্য (৳):</label>
+            <input type="number" id="hourlyRate" value="500" min="100" step="100">
+          </div>
+          <div class="loss-display">
+            বছরে আপনার সম্ভাব্য সময়ের ক্ষতি: <span id="yearlyLossText">৳ ১,৮০,০০০</span>
+          </div>
+        </div>
+        <label class="checkbox-container">
+          <input type="checkbox" id="chkCostAccept">
+          <span class="checkmark"></span>
+          আমি সচেতনভাবে এই সময় ও আর্থিক ক্ষতির ঝুঁকি স্বীকার করছি।
+        </label>
+        <button id="btnStep7Next" class="btn-primary" disabled>ক্ষতি স্বীকার করে এগিয়ে যান</button>
+      </section>
+
+      <!-- Step 8: Reverse Cognitive Typing -->
+      <section id="step8" class="step-pane">
+        <div class="step-icon">🧩</div>
+        <h2>ধাপ ৮: রিভার্স কগনিটিভ টেস্ট</h2>
+        <p class="step-desc">
+          সাবকনশাস অভ্যাসের জড়তা কাটাতে নিচের বিপরীত শব্দগুচ্ছটি হুবহু টাইপ করুন:
+        </p>
+        <div class="reverse-prompt" id="reverseTargetText">
+          ধৈর্য এবং একাগ্রতাই সফলতার চাবিকাঠি
+        </div>
+        <div class="reverse-hint">
+          উল্টো করে টাইপ করুন (ডান থেকে বামে শব্দ সাজিয়ে):
+          <strong id="reverseExpectedText">চাবিকাঠি সফলতার একাগ্রতাই এবং ধৈর্য</strong>
+        </div>
+        <div class="textarea-wrapper">
+          <input type="text" id="reverseInput" placeholder="এখানে টাইপ করুন..." class="single-line-input">
+        </div>
+        <button id="btnStep8Next" class="btn-primary" disabled>টেস্ট সম্পন্ন করুন</button>
+      </section>
+
+      <!-- Step 9: The Ultimate Exit Choice Gate -->
+      <section id="step9" class="step-pane">
+        <div class="step-icon">🛡️</div>
+        <h2>ধাপ ৯: সিদ্ধান্ত নিন — ফিরে যাবেন নাকি ঢুকবেন?</h2>
+        <p class="step-desc">
+          আপনি ইতোমধ্যে অনেক দূর এসেছেন। এটি আপনার প্রলোভন জয় করার সেরা সুযোগ। এখনই ফিরে গিয়ে বিজয়ী হোন!
+        </p>
+        <div class="exit-gate-actions">
+          <button id="btnAbortHero" class="btn-hero-abort">
+            🌟 না! আমি সময় নষ্ট করব না — ট্যাব বন্ধ করুন
+          </button>
+          <div class="sub-exit">
+            <button id="btnStep9Next" class="btn-ghost">
+              আমি তবুও ঝুঁকি নিয়ে শেষ ধাপে যেতে চাই...
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 10: Final 10-Second Lockdown & Unlock -->
+      <section id="step10" class="step-pane">
+        <div class="step-icon">🔓</div>
+        <h2>ধাপ ১০: চূড়ান্ত সচেতনতা ও আনলক</h2>
+        <p class="step-desc">
+          টার্গেট সাইট: <strong id="summaryDomain">facebook.com</strong> |
+          বরাদ্দকৃত সময়: <strong id="summaryDuration">১০ মিনিট</strong>
+        </p>
+        <div class="final-countdown-box">
+          <div class="countdown-number" id="finalCountdown">১০</div>
+          <div class="countdown-label">সেকেন্ড পর স্বয়ংক্রিয়ভাবে প্রবেশ ঘটবে...</div>
+        </div>
+        <div class="final-warning">
+          ⚠️ মনে রাখবেন: উপরে স্ক্রিনে ফ্লোটিং টাইমার চলবে। ০ মিনিট হওয়ামাত্র কোনো বার্তা ছাড়াই সাইট বন্ধ হয়ে যাবে।
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer Exit option -->
+    <footer class="gate-footer">
+      <button id="btnCancelGlobal" class="btn-text">✕ প্রলোভন এড়িয়ে কাজে ফিরে যান (ট্যাব বন্ধ করুন)</button>
+    </footer>
+  </div>
+
+  <script src="gate.js"></script>
+</body>
+
+</html>

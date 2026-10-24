@@ -1,0 +1,114 @@
+/* Floating Session Timer Overlay on Unlocked Social Sites */
+#mindful-floating-timer {
+  position: fixed;
+  top: 18px;
+  right: 24px;
+  z-index: 2147483647; /* Maximum z-index */
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  backdrop-filter: blur(10px);
+  padding: 8px 16px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: grab;
+  user-select: none;
+  transition:
+    border-color 0.3s,
+    transform 0.2s;
+}
+
+#mindful-floating-timer:hover {
+  border-color: #38bdf8;
+  transform: scale(1.03);
+}
+
+#mindful-floating-timer.danger {
+  border-color: #ef4444;
+  background: rgba(185, 28, 28, 0.92);
+  animation: timerPulse 1s infinite alternate;
+}
+
+@keyframes timerPulse {
+  from {
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+  }
+  to {
+    box-shadow: 0 0 25px rgba(239, 68, 68, 0.8);
+  }
+}
+
+.mindful-timer-icon {
+  font-size: 15px;
+}
+
+.mindful-timer-digits {
+  color: #38bdf8;
+  font-family: monospace;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+#mindful-floating-timer.danger .mindful-timer-digits {
+  color: #ffffff;
+}
+
+.mindful-lock-now-btn {
+  background: rgba(244, 63, 94, 0.2);
+  border: 1px solid rgba(244, 63, 94, 0.5);
+  color: #fca5a5;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mindful-lock-now-btn:hover {
+  background: #f43f5e;
+  color: #ffffff;
+}
+
+/* Fullscreen Lockout Overlay */
+#mindful-lockout-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2147483647;
+  background: rgba(9, 13, 22, 0.98);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #ffffff;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  text-align: center;
+  padding: 20px;
+}
+
+#mindful-lockout-screen h1 {
+  font-size: 28px;
+  color: #ef4444;
+  margin-bottom: 12px;
+}
+
+#mindful-lockout-screen p {
+  font-size: 16px;
+  color: #94a3b8;
+  max-width: 500px;
+  line-height: 1.6;
+}

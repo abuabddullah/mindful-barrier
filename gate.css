@@ -1,0 +1,699 @@
+/* MindfulBarrier - 10-Step Gate Styling */
+:root {
+  --bg-main: #090d16;
+  --bg-card: #0f172a;
+  --bg-card-sub: #1e293b;
+  --border-color: #334155;
+  --accent-blue: #3b82f6;
+  --accent-cyan: #06b6d4;
+  --accent-emerald: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-rose: #f43f5e;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-sub: #cbd5e1;
+  --radius-lg: 16px;
+  --radius-md: 10px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Hind Siliguri",
+    sans-serif;
+  user-select: none;
+}
+
+/* Allow typing inputs to be selected */
+input,
+textarea {
+  user-select: text;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow-x: hidden;
+  padding: 24px 16px;
+}
+
+.stars-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(
+      circle at 50% 20%,
+      rgba(30, 58, 138, 0.25),
+      transparent 70%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(13, 148, 136, 0.15),
+      transparent 60%
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.container {
+  width: 100%;
+  max-width: 680px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Header */
+.gate-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(12px);
+}
+
+.logo-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-badge .icon {
+  font-size: 22px;
+}
+
+.logo-badge .brand {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, #60a5fa, #38bdf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.target-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.target-label {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.domain-pill {
+  background: rgba(244, 63, 94, 0.15);
+  border: 1px solid rgba(244, 63, 94, 0.4);
+  color: #fb7185;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Progress Section */
+.progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.step-title {
+  color: #93c5fd;
+  font-weight: 600;
+}
+
+.step-count {
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.progress-bar-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(30, 41, 59, 0.8);
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid rgba(51, 65, 85, 0.5);
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #06b6d4, #10b981);
+  border-radius: 999px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Warning Banner */
+.warning-banner {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid #f59e0b;
+  color: #fcd34d;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  text-align: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Main Gate Card */
+.gate-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 32px 28px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(16px);
+  min-height: 440px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.step-pane {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 20px;
+  animation: slideFadeIn 0.35s ease forwards;
+}
+
+.step-pane.active {
+  display: flex;
+}
+
+.step-icon {
+  font-size: 42px;
+  filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.3));
+}
+
+.step-pane h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.step-desc {
+  font-size: 15px;
+  color: var(--text-sub);
+  line-height: 1.6;
+  max-width: 540px;
+}
+
+/* Step 1: Breathing */
+.breathing-circle-wrapper {
+  margin: 10px 0;
+}
+
+.breathing-circle {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 0.3),
+    rgba(6, 182, 212, 0.1)
+  );
+  border: 2px solid #38bdf8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e0f2fe;
+  font-weight: 600;
+  font-size: 15px;
+  animation: breatheAnim 8s infinite ease-in-out;
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
+}
+
+@keyframes breatheAnim {
+  0%,
+  100% {
+    transform: scale(0.85);
+    border-color: #38bdf8;
+  }
+  50% {
+    transform: scale(1.15);
+    border-color: #34d399;
+    box-shadow: 0 0 35px rgba(52, 211, 153, 0.4);
+  }
+}
+
+.timer-display {
+  font-size: 18px;
+  font-weight: 700;
+  color: #38bdf8;
+}
+
+/* Step 2: Textarea */
+.textarea-wrapper {
+  width: 100%;
+  max-width: 540px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+textarea {
+  width: 100%;
+  background: var(--bg-card-sub);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+textarea:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.char-counter {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.no-paste-hint {
+  font-size: 13px;
+  color: #f87171;
+}
+
+/* Step 3: Oath */
+.oath-box {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px dashed #64748b;
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #f1f5f9;
+  text-align: justify;
+  max-width: 540px;
+}
+
+.match-status {
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.match-status.valid {
+  color: var(--accent-emerald);
+}
+
+.match-status.invalid {
+  color: var(--accent-rose);
+}
+
+/* Step 4: Math */
+.math-problems-list {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.math-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card-sub);
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.math-q {
+  font-size: 16px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.math-input {
+  width: 110px;
+  background: #0f172a;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: #fff;
+  font-size: 16px;
+  text-align: center;
+  outline: none;
+}
+
+.math-input:focus {
+  border-color: var(--accent-blue);
+}
+
+.status-indicator {
+  width: 24px;
+  font-size: 18px;
+}
+
+/* Step 5: Physical */
+.water-break-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid var(--border-color);
+  padding: 24px 36px;
+  border-radius: var(--radius-lg);
+}
+
+.water-icon {
+  font-size: 40px;
+}
+
+.physical-timer {
+  font-size: 36px;
+  font-weight: 800;
+  color: #38bdf8;
+  letter-spacing: 2px;
+}
+
+.water-instruction {
+  font-size: 14px;
+  color: var(--text-sub);
+}
+
+/* Step 6: Time Options */
+.time-options-grid {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  max-width: 520px;
+}
+
+.time-option {
+  flex: 1;
+  background: var(--bg-card-sub);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.time-option input {
+  display: none;
+}
+
+.time-option:hover {
+  border-color: #64748b;
+}
+
+.time-option.selected {
+  border-color: var(--accent-blue);
+  background: rgba(59, 130, 246, 0.12);
+}
+
+.time-badge {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.time-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Step 7: Cost Calculator */
+.cost-calculator-card {
+  width: 100%;
+  max-width: 480px;
+  background: var(--bg-card-sub);
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.hourly-input-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.hourly-input-row input {
+  width: 100px;
+  background: #0f172a;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: #fff;
+  text-align: right;
+  font-weight: 600;
+}
+
+.loss-display {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-sub);
+}
+
+.loss-display span {
+  color: #f43f5e;
+  font-weight: 800;
+  font-size: 18px;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-sub);
+}
+
+/* Step 8: Reverse text */
+.reverse-prompt {
+  font-size: 17px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.reverse-hint {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.reverse-hint strong {
+  color: #38bdf8;
+  display: block;
+  margin-top: 4px;
+  letter-spacing: 0.5px;
+}
+
+.single-line-input {
+  width: 100%;
+  background: var(--bg-card-sub);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  color: #fff;
+  font-size: 15px;
+  text-align: center;
+  outline: none;
+}
+
+/* Step 9: Hero Exit Gate */
+.exit-gate-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+  max-width: 480px;
+  margin-top: 10px;
+}
+
+.btn-hero-abort {
+  width: 100%;
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 18px 24px;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+  transition: all 0.25s;
+}
+
+.btn-hero-abort:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 35px rgba(16, 185, 129, 0.6);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+
+.btn-ghost:hover {
+  color: #94a3b8;
+}
+
+/* Step 10: Final Countdown */
+.final-countdown-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.countdown-number {
+  font-size: 64px;
+  font-weight: 900;
+  color: #10b981;
+  text-shadow: 0 0 30px rgba(16, 185, 129, 0.6);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+.countdown-label {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.final-warning {
+  background: rgba(244, 63, 94, 0.15);
+  border: 1px solid rgba(244, 63, 94, 0.4);
+  color: #fca5a5;
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+}
+
+/* Buttons */
+.btn-primary {
+  width: 100%;
+  max-width: 440px;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 14px 20px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.gate-footer {
+  text-align: center;
+  margin-top: 4px;
+}
+
+.btn-text {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 12px;
+  transition: color 0.2s;
+}
+
+.btn-text:hover {
+  color: #f87171;
+}
+
+/* Keyframe animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

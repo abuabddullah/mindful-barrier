@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MindfulBarrier</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="popup-header">
+      <div class="header-title">
+        <span class="icon">🛑</span>
+        <h1>MindfulBarrier</h1>
+      </div>
+      <div class="status-indicator-badge">
+        <span class="dot"></span>
+        <span>সুরক্ষা চালু</span>
+      </div>
+    </header>
+
+    <!-- Stats Grid -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-val" id="statBlocked">০</span>
+        <span class="stat-lbl">বাধা দেওয়া হয়েছে</span>
+      </div>
+      <div class="stat-card highlight">
+        <span class="stat-val" id="statSaved">০</span>
+        <span class="stat-lbl">প্রলোভন জয় করেছেন</span>
+      </div>
+    </section>
+
+    <!-- Quick Check Presets (Social Media) -->
+    <section class="presets-section">
+      <div class="section-title">
+        <span>জনপ্রিয় সোশ্যাল মিডিয়া নির্বাচন করুন</span>
+        <button id="btnSelectAll" class="btn-text-small">সব সিলেক্ট</button>
+      </div>
+      
+      <div class="preset-grid" id="presetGrid">
+        <!-- Preset checkboxes rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- Custom URLs / Domains -->
+    <section class="custom-section">
+      <div class="section-title">
+        <span>যেকোনো ওয়েবসাইট বা URL ব্লক করুন</span>
+      </div>
+      <div class="add-url-row">
+        <input type="text" id="customUrlInput" placeholder="যেমন: netflix.com বা যেকোনো লিঙ্ক">
+        <button id="btnAddCustomUrl" class="btn-primary-add">+ যুক্ত করুন</button>
+      </div>
+
+      <!-- Custom URLs List -->
+      <div class="custom-list" id="customList">
+        <!-- Dynamic custom list -->
+      </div>
+    </section>
+
+    <!-- Footer Action -->
+    <footer class="popup-footer">
+      <button id="btnTriggerDeactivate" class="btn-deactivate">
+        ⚠️ সম্পূর্ণ সুরক্ষা নিষ্ক্রিয় করবেন? (১০টি ধাপ লাগবে)
+      </button>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
