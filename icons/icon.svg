@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <!-- Midnight Shield Gradient -->
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+
+    <!-- Neon Glow Filter -->
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Outer Protective Shield -->
+  <path d="M 64,8 
+           Q 106,12 118,22 
+           Q 122,64 64,122 
+           Q 6,64 10,22 
+           Q 22,12 64,8 Z" 
+        fill="url(#shieldGrad)" 
+        stroke="#38bdf8" 
+        stroke-width="3" 
+        filter="url(#neonGlow)" />
+
+  <!-- 10 Luminous Golden Gate Pearls -->
+  <!-- Top, angles around periphery -->
+  <circle cx="64" cy="18" r="3.5" fill="#fbbf24" />
+  <circle cx="91" cy="28" r="3.5" fill="#fbbf24" />
+  <circle cx="107" cy="52" r="3.5" fill="#fbbf24" />
+  <circle cx="98" cy="80" r="3.5" fill="#fbbf24" />
+  <circle cx="78" cy="102" r="3.5" fill="#fbbf24" />
+  <circle cx="50" cy="102" r="3.5" fill="#fbbf24" />
+  <circle cx="30" cy="80" r="3.5" fill="#fbbf24" />
+  <circle cx="21" cy="52" r="3.5" fill="#fbbf24" />
+  <circle cx="37" cy="28" r="3.5" fill="#fbbf24" />
+  <circle cx="64" cy="114" r="3" fill="#fbbf24" />
+
+  <!-- Inner Mindful Focus Ring -->
+  <circle cx="64" cy="62" r="26" fill="none" stroke="#10b981" stroke-width="2" opacity="0.8" />
+
+  <!-- Stylized Prefrontal Cortex / Brain Silhouette -->
+  <!-- Left Hemisphere -->
+  <path d="M 61,43 
+           C 48,46 44,56 46,65 
+           C 44,74 52,80 61,80" 
+        fill="none" 
+        stroke="#f8fafc" 
+        stroke-width="3.5" 
+        stroke-linecap="round" />
+
+  <!-- Right Hemisphere -->
+  <path d="M 67,43 
+           C 80,46 84,56 82,65 
+           C 84,74 76,80 67,80" 
+        fill="none" 
+        stroke="#f8fafc" 
+        stroke-width="3.5" 
+        stroke-linecap="round" />
+
+  <!-- Central Cognitive Barrier Pillar / Fortress Lock -->
+  <line x1="64" y1="41" x2="64" y2="82" stroke="#38bdf8" stroke-width="4" stroke-linecap="round" />
+
+  <!-- Apex Jewel of Mindfulness (Emerald) -->
+  <circle cx="64" cy="38" r="5" fill="#34d399" filter="url(#neonGlow)" />
+</svg>
