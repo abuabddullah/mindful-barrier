@@ -12,6 +12,64 @@
     return;
   }
 
+  // ==========================================
+  // Media Control for Periodic Istighfar Reminder
+  // ==========================================
+  chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    if (msg.type === 'PAUSE_ENTERTAINMENT_MEDIA') {
+      // 1. SMART MEETING / CALL EXCLUSION:
+      // If the user is on Google Meet, WhatsApp, Microsoft Teams, Zoom, or Messenger Calls:
+      // We NEVER pause or disrupt their call!
+      const isMeetingCall = 
+        currentHost.includes('meet.google.com') ||
+        currentHost.includes('web.whatsapp.com') ||
+        currentHost.includes('teams.microsoft.com') ||
+        currentHost.includes('zoom.us') ||
+        (currentHost.includes('facebook.com') && currentUrl.includes('/call/')) ||
+        (currentHost.includes('messenger.com') && currentUrl.includes('/call/'));
+
+      if (isMeetingCall) {
+        sendResponse({ status: 'ignored_meeting' });
+        return true;
+      }
+
+      // 2. PAUSE ALL PLAYING VIDEO / AUDIO ELEMENTS (YouTube, Facebook, Netflix, Spotify, etc.)
+      const mediaEls = Array.from(document.querySelectorAll('video, audio'));
+      let pausedCount = 0;
+      mediaEls.forEach(el => {
+        if (!el.paused && !el.ended && el.readyState > 0) {
+          try {
+            el.pause();
+            el.dataset.pausedByIstighfar = 'true';
+            pausedCount++;
+          } catch (e) {
+            console.warn('Could not pause element', e);
+          }
+        }
+      });
+
+      sendResponse({ status: 'paused', count: pausedCount });
+      return true;
+    }
+
+    if (msg.type === 'RESUME_ENTERTAINMENT_MEDIA') {
+      const mediaEls = Array.from(document.querySelectorAll('video, audio'));
+      let resumedCount = 0;
+      mediaEls.forEach(el => {
+        if (el.dataset.pausedByIstighfar === 'true') {
+          delete el.dataset.pausedByIstighfar;
+          try {
+            el.play().catch(() => {});
+            resumedCount++;
+          } catch (e) {}
+        }
+      });
+
+      sendResponse({ status: 'resumed', count: resumedCount });
+      return true;
+    }
+  });
+
   // Initial status check
   chrome.runtime.sendMessage(
     { type: 'CHECK_STATUS', url: currentUrl, hostname: currentHost },

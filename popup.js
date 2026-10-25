@@ -189,6 +189,122 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
+  // ==========================================
+  // Istighfar Reminder Controller
+  // ==========================================
+  const toggleIstighfar = document.getElementById('toggleIstighfar');
+  const istighfarBody = document.getElementById('istighfarBody');
+  const istighfarInterval = document.getElementById('istighfarInterval');
+  const istighfarPulse = document.getElementById('istighfarPulse');
+  const istighfarCountdownText = document.getElementById('istighfarCountdownText');
+  const btnTestIstighfar = document.getElementById('btnTestIstighfar');
+  const chkAutoResume = document.getElementById('chkAutoResume');
+  const chkProtectCalls = document.getElementById('chkProtectCalls');
+
+  let { istighfarSettings = {
+    enabled: false,
+    intervalMinutes: 1,
+    autoResumeMedia: true,
+    protectCalls: true,
+    nextTriggerTime: 0
+  } } = await chrome.storage.local.get('istighfarSettings');
+
+  if (toggleIstighfar) {
+    toggleIstighfar.checked = !!istighfarSettings.enabled;
+    istighfarInterval.value = String(istighfarSettings.intervalMinutes || 1);
+    chkAutoResume.checked = istighfarSettings.autoResumeMedia !== false;
+    chkProtectCalls.checked = istighfarSettings.protectCalls !== false;
+
+    let countdownInterval = null;
+
+    function updateIstighfarUI() {
+      const isEnabled = toggleIstighfar.checked;
+      if (isEnabled) {
+        istighfarBody.classList.remove('disabled');
+        istighfarPulse.classList.add('active');
+      } else {
+        istighfarBody.classList.add('disabled');
+        istighfarPulse.classList.remove('active');
+        istighfarCountdownText.textContent = 'স্ট্যাটাস: বন্ধ রয়েছে';
+        if (countdownInterval) clearInterval(countdownInterval);
+        return;
+      }
+
+      if (countdownInterval) clearInterval(countdownInterval);
+      countdownInterval = setInterval(() => {
+        const now = Date.now();
+        const target = istighfarSettings.nextTriggerTime || (now + (Number(istighfarInterval.value) * 60000));
+        const diff = Math.max(0, Math.floor((target - now) / 1000));
+        const m = Math.floor(diff / 60);
+        const s = diff % 60;
+        istighfarCountdownText.textContent = `পরবর্তী জিকির: ${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')} মিনিট পর`;
+      }, 1000);
+    }
+
+    toggleIstighfar.addEventListener('change', () => {
+      const isEnabled = toggleIstighfar.checked;
+      if (isEnabled) {
+        const intervalVal = Number(istighfarInterval.value);
+        chrome.runtime.sendMessage({
+          type: 'START_ISTIGHFAR_TIMER',
+          intervalMinutes: intervalVal,
+          autoResumeMedia: chkAutoResume.checked,
+          protectCalls: chkProtectCalls.checked
+        }, (res) => {
+          if (res && res.istighfarSettings) {
+            istighfarSettings = res.istighfarSettings;
+          }
+          updateIstighfarUI();
+        });
+      } else {
+        chrome.runtime.sendMessage({ type: 'STOP_ISTIGHFAR_TIMER' }, (res) => {
+          if (res && res.istighfarSettings) {
+            istighfarSettings = res.istighfarSettings;
+          }
+          updateIstighfarUI();
+        });
+      }
+    });
+
+    istighfarInterval.addEventListener('change', () => {
+      if (toggleIstighfar.checked) {
+        const intervalVal = Number(istighfarInterval.value);
+        chrome.runtime.sendMessage({
+          type: 'START_ISTIGHFAR_TIMER',
+          intervalMinutes: intervalVal,
+          autoResumeMedia: chkAutoResume.checked,
+          protectCalls: chkProtectCalls.checked
+        }, (res) => {
+          if (res && res.istighfarSettings) {
+            istighfarSettings = res.istighfarSettings;
+          }
+          updateIstighfarUI();
+        });
+      }
+    });
+
+    chkAutoResume.addEventListener('change', async () => {
+      istighfarSettings.autoResumeMedia = chkAutoResume.checked;
+      await chrome.storage.local.set({ istighfarSettings });
+    });
+
+    chkProtectCalls.addEventListener('change', async () => {
+      istighfarSettings.protectCalls = chkProtectCalls.checked;
+      await chrome.storage.local.set({ istighfarSettings });
+    });
+
+    btnTestIstighfar.addEventListener('click', () => {
+      btnTestIstighfar.textContent = '⏳ বাজছে...';
+      chrome.runtime.sendMessage({ type: 'TEST_ISTIGHFAR_NOW' }, () => {
+        setTimeout(() => {
+          btnTestIstighfar.textContent = '▶️ টেস্ট শুনুন';
+        }, 5000);
+      });
+    });
+
+    updateIstighfarUI();
+  }
+
   // Initial renders
   renderPresets();
   renderCustomList();

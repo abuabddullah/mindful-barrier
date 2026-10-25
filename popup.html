@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="bn">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MindfulBarrier</title>
   <link rel="stylesheet" href="popup.css">
 </head>
+
 <body>
   <div class="popup-container">
     <!-- Header -->
@@ -32,13 +34,60 @@
       </div>
     </section>
 
+    <!-- Periodic Istighfar Reminder Section -->
+    <section class="istighfar-section">
+      <div class="istighfar-header">
+        <div class="istighfar-title">
+          <span class="icon">📿</span>
+          <span>ইস্তিগফার ও জিকির রিমাইন্ডার</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="toggleIstighfar">
+          <span class="slider round"></span>
+        </label>
+      </div>
+
+      <div class="istighfar-body" id="istighfarBody">
+        <div class="istighfar-row">
+          <label for="istighfarInterval">বিরতির সময়:</label>
+          <select id="istighfarInterval" class="istighfar-select">
+            <option value="1">প্রতি ১ মিনিট পর পর</option>
+            <option value="2">প্রতি ২ মিনিট পর পর</option>
+            <option value="5">প্রতি ৫ মিনিট পর পর</option>
+            <option value="10">প্রতি ১০ মিনিট পর পর</option>
+            <option value="15">প্রতি ১৫ মিনিট পর পর</option>
+            <option value="30">প্রতি ৩০ মিনিট পর পর</option>
+          </select>
+        </div>
+
+        <div class="istighfar-status-card">
+          <div class="status-indicator">
+            <span class="pulse-dot" id="istighfarPulse"></span>
+            <span class="status-text" id="istighfarCountdownText">স্ট্যাটাস: বন্ধ রয়েছে</span>
+          </div>
+          <button id="btnTestIstighfar" class="btn-test-audio" title="টেস্ট প্লে করে চেক করুন">▶️ টেস্ট শুনুন</button>
+        </div>
+
+        <div class="istighfar-options">
+          <label class="checkbox-option">
+            <input type="checkbox" id="chkAutoResume" checked>
+            <span>ভিডিও/অডিও সাময়িক পজ করে জিকির শেষে আবার চালু হবে</span>
+          </label>
+          <label class="checkbox-option">
+            <input type="checkbox" id="chkProtectCalls" checked>
+            <span>গুগল মিট / কলের অডিও নিরাপদ রাখা (অন্য কেউ শুনবে না)</span>
+          </label>
+        </div>
+      </div>
+    </section>
+
     <!-- Quick Check Presets (Social Media) -->
     <section class="presets-section">
       <div class="section-title">
         <span>জনপ্রিয় সোশ্যাল মিডিয়া নির্বাচন করুন</span>
         <button id="btnSelectAll" class="btn-text-small">সব সিলেক্ট</button>
       </div>
-      
+
       <div class="preset-grid" id="presetGrid">
         <!-- Preset checkboxes rendered dynamically -->
       </div>
@@ -70,4 +119,5 @@
 
   <script src="popup.js"></script>
 </body>
+
 </html>

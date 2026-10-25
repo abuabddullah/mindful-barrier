@@ -6,9 +6,105 @@ const DEFAULT_BLOCKED_DOMAINS = [
   'facebook.com'
 ];
 
+const DEFAULT_ISTIGHFAR_SETTINGS = {
+  enabled: false,
+  intervalMinutes: 1,
+  autoResumeMedia: true,
+  protectCalls: true,
+  nextTriggerTime: 0
+};
+
+// Offscreen audio manager
+let creatingOffscreenPromise = null;
+async function ensureOffscreenDocument() {
+  const offscreenUrl = chrome.runtime.getURL('offscreen.html');
+
+  if (chrome.runtime.getContexts) {
+    const contexts = await chrome.runtime.getContexts({
+      contextTypes: ['OFFSCREEN_DOCUMENT'],
+      documentUrls: [offscreenUrl]
+    });
+    if (contexts.length > 0) return;
+  } else if (chrome.offscreen && chrome.offscreen.hasDocument) {
+    const hasDoc = await chrome.offscreen.hasDocument();
+    if (hasDoc) return;
+  }
+
+  if (creatingOffscreenPromise) {
+    await creatingOffscreenPromise;
+    return;
+  }
+
+  creatingOffscreenPromise = chrome.offscreen.createDocument({
+    url: 'offscreen.html',
+    reasons: ['AUDIO_PLAYBACK'],
+    justification: 'Mindful Istighfar periodic reminder audio playback'
+  });
+
+  try {
+    await creatingOffscreenPromise;
+  } catch (err) {
+    // Document might already exist
+  } finally {
+    creatingOffscreenPromise = null;
+  }
+}
+
+// Play Istighfar and pause all media
+async function triggerIstighfarPlayback() {
+  const { istighfarSettings = DEFAULT_ISTIGHFAR_SETTINGS } = await chrome.storage.local.get('istighfarSettings');
+
+  // 1. SMART CALL PROTECTION (Google Meet / WhatsApp / Teams / Zoom)
+  if (istighfarSettings.protectCalls) {
+    try {
+      const callTabs = await chrome.tabs.query({
+        url: [
+          "*://meet.google.com/*",
+          "*://web.whatsapp.com/*",
+          "*://teams.microsoft.com/*",
+          "*://zoom.us/*"
+        ]
+      });
+
+      // If user is currently in an active audio call, skip to prevent speaker-to-mic bleed
+      const activeCall = callTabs.find(t => t.audible);
+      if (activeCall) {
+        console.log('MindfulBarrier: Active call in progress. Deferring Istighfar to protect conversation.');
+        return;
+      }
+    } catch (e) {
+      console.warn('Call protection check error:', e);
+    }
+  }
+
+  // 2. PAUSE ALL OTHER TABS' MEDIA (YouTube, Facebook, Netflix, Spotify, etc.)
+  try {
+    const tabs = await chrome.tabs.query({});
+    for (const tab of tabs) {
+      if (tab.id && tab.url && !tab.url.startsWith('chrome://') && !tab.url.startsWith('chrome-extension://')) {
+        chrome.tabs.sendMessage(tab.id, { type: 'PAUSE_ENTERTAINMENT_MEDIA' }).catch(() => {});
+      }
+    }
+  } catch (e) {
+    console.warn('Error broadcasting pause:', e);
+  }
+
+  // 3. PLAY AUDIO VIA OFFSCREEN ENGINE
+  try {
+    await ensureOffscreenDocument();
+    chrome.runtime.sendMessage({
+      type: 'PLAY_AUDIO',
+      audioUrl: chrome.runtime.getURL('sounds/istigfar.wav'),
+      volume: 1.0
+    }).catch(err => console.error('Error sending PLAY_AUDIO message:', err));
+  } catch (e) {
+    console.error('Failed to trigger audio in offscreen:', e);
+  }
+}
+
 // Initialize default storage on install
 chrome.runtime.onInstalled.addListener(async () => {
-  const data = await chrome.storage.local.get(['blockedDomains', 'sessions', 'stats']);
+  const data = await chrome.storage.local.get(['blockedDomains', 'sessions', 'stats', 'istighfarSettings']);
   
   const updates = {};
   if (!data.blockedDomains) {
@@ -16,6 +112,9 @@ chrome.runtime.onInstalled.addListener(async () => {
   }
   if (!data.sessions) {
     updates.sessions = {};
+  }
+  if (!data.istighfarSettings) {
+    updates.istighfarSettings = DEFAULT_ISTIGHFAR_SETTINGS;
   }
   if (!data.stats) {
     updates.stats = {
@@ -93,8 +192,18 @@ chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
   chrome.tabs.update(details.tabId, { url: gateUrl });
 });
 
-// Handle alarms for session expiry
+// Handle alarms for session expiry and Istighfar reminders
 chrome.alarms.onAlarm.addListener(async (alarm) => {
+  if (alarm.name === 'istighfar_reminder_alarm') {
+    await triggerIstighfarPlayback();
+    const { istighfarSettings = DEFAULT_ISTIGHFAR_SETTINGS } = await chrome.storage.local.get('istighfarSettings');
+    if (istighfarSettings.enabled) {
+      istighfarSettings.nextTriggerTime = Date.now() + (istighfarSettings.intervalMinutes * 60 * 1000);
+      await chrome.storage.local.set({ istighfarSettings });
+    }
+    return;
+  }
+
   if (alarm.name.startsWith('session_expiry_')) {
     const domain = alarm.name.replace('session_expiry_', '');
     const { sessions = {} } = await chrome.storage.local.get('sessions');
@@ -206,6 +315,69 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         chrome.alarms.clear(`session_expiry_${domain}`);
       }
       sendResponse({ success: true });
+    })();
+    return true;
+  }
+
+  // ==========================================
+  // Istighfar Reminder Messages
+  // ==========================================
+  if (message.type === 'START_ISTIGHFAR_TIMER') {
+    (async () => {
+      const { intervalMinutes = 1, autoResumeMedia = true, protectCalls = true } = message;
+      const nextTriggerTime = Date.now() + (intervalMinutes * 60 * 1000);
+      const istighfarSettings = {
+        enabled: true,
+        intervalMinutes: Number(intervalMinutes),
+        autoResumeMedia: !!autoResumeMedia,
+        protectCalls: !!protectCalls,
+        nextTriggerTime
+      };
+
+      await chrome.storage.local.set({ istighfarSettings });
+      await chrome.alarms.clear('istighfar_reminder_alarm');
+      chrome.alarms.create('istighfar_reminder_alarm', {
+        delayInMinutes: Number(intervalMinutes),
+        periodInMinutes: Number(intervalMinutes)
+      });
+
+      sendResponse({ success: true, istighfarSettings });
+    })();
+    return true;
+  }
+
+  if (message.type === 'STOP_ISTIGHFAR_TIMER') {
+    (async () => {
+      const { istighfarSettings = DEFAULT_ISTIGHFAR_SETTINGS } = await chrome.storage.local.get('istighfarSettings');
+      istighfarSettings.enabled = false;
+      istighfarSettings.nextTriggerTime = 0;
+
+      await chrome.storage.local.set({ istighfarSettings });
+      await chrome.alarms.clear('istighfar_reminder_alarm');
+      sendResponse({ success: true, istighfarSettings });
+    })();
+    return true;
+  }
+
+  if (message.type === 'TEST_ISTIGHFAR_NOW') {
+    (async () => {
+      await triggerIstighfarPlayback();
+      sendResponse({ success: true });
+    })();
+    return true;
+  }
+
+  if (message.type === 'AUDIO_PLAYBACK_FINISHED') {
+    (async () => {
+      const { istighfarSettings = DEFAULT_ISTIGHFAR_SETTINGS } = await chrome.storage.local.get('istighfarSettings');
+      if (istighfarSettings.autoResumeMedia) {
+        const tabs = await chrome.tabs.query({});
+        for (const tab of tabs) {
+          if (tab.id && tab.url && !tab.url.startsWith('chrome://') && !tab.url.startsWith('chrome-extension://')) {
+            chrome.tabs.sendMessage(tab.id, { type: 'RESUME_ENTERTAINMENT_MEDIA' }).catch(() => {});
+          }
+        }
+      }
     })();
     return true;
   }

@@ -9,7 +9,7 @@
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-  "permissions": ["storage", "alarms", "webNavigation", "tabs"],
+  "permissions": ["storage", "alarms", "webNavigation", "tabs", "offscreen"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"
@@ -44,7 +44,9 @@
         "icons/icon16.png",
         "icons/icon32.png",
         "icons/icon48.png",
-        "icons/icon128.png"
+        "icons/icon128.png",
+        "sounds/istigfar.wav",
+        "offscreen.html"
       ],
       "matches": ["<all_urls>"]
     }
