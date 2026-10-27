@@ -1,5 +1,6 @@
 /**
  * MindfulBarrier - Background Service Worker (Manifest V3)
+ * Handles domain blocking, session timers, and periodic in-browser Istighfar reminders.
  */
 
 const DEFAULT_BLOCKED_DOMAINS = [
@@ -14,7 +15,9 @@ const DEFAULT_ISTIGHFAR_SETTINGS = {
   nextTriggerTime: 0
 };
 
-// Offscreen audio manager
+// ==========================================
+// Offscreen Document Helper for Audio Playback
+// ==========================================
 let creatingOffscreenPromise = null;
 async function ensureOffscreenDocument() {
   const offscreenUrl = chrome.runtime.getURL('offscreen.html');
@@ -44,17 +47,17 @@ async function ensureOffscreenDocument() {
   try {
     await creatingOffscreenPromise;
   } catch (err) {
-    // Document might already exist
+    // Document may already be created
   } finally {
     creatingOffscreenPromise = null;
   }
 }
 
-// Play Istighfar and pause all media
+// Trigger Istighfar Audio and pause media in other tabs
 async function triggerIstighfarPlayback() {
   const { istighfarSettings = DEFAULT_ISTIGHFAR_SETTINGS } = await chrome.storage.local.get('istighfarSettings');
 
-  // 1. SMART CALL PROTECTION (Google Meet / WhatsApp / Teams / Zoom)
+  // 1. Smart Call Protection (Google Meet / WhatsApp / Teams / Zoom)
   if (istighfarSettings.protectCalls) {
     try {
       const callTabs = await chrome.tabs.query({
@@ -66,10 +69,10 @@ async function triggerIstighfarPlayback() {
         ]
       });
 
-      // If user is currently in an active audio call, skip to prevent speaker-to-mic bleed
+      // If user is currently in an active audio call, defer to avoid disturbance
       const activeCall = callTabs.find(t => t.audible);
       if (activeCall) {
-        console.log('MindfulBarrier: Active call in progress. Deferring Istighfar to protect conversation.');
+        console.log('MindfulBarrier: Active call in progress. Deferring Istighfar.');
         return;
       }
     } catch (e) {
@@ -77,7 +80,7 @@ async function triggerIstighfarPlayback() {
     }
   }
 
-  // 2. PAUSE ALL OTHER TABS' MEDIA (YouTube, Facebook, Netflix, Spotify, etc.)
+  // 2. Pause media in all non-meeting web tabs
   try {
     const tabs = await chrome.tabs.query({});
     for (const tab of tabs) {
@@ -89,13 +92,12 @@ async function triggerIstighfarPlayback() {
     console.warn('Error broadcasting pause:', e);
   }
 
-  // 3. PLAY AUDIO VIA OFFSCREEN ENGINE
+  // 3. Play audio via offscreen engine
   try {
     await ensureOffscreenDocument();
     chrome.runtime.sendMessage({
       type: 'PLAY_AUDIO',
-      audioUrl: chrome.runtime.getURL('sounds/istigfar.wav'),
-      volume: 1.0
+      audioUrl: chrome.runtime.getURL('sounds/istigfar.wav')
     }).catch(err => console.error('Error sending PLAY_AUDIO message:', err));
   } catch (e) {
     console.error('Failed to trigger audio in offscreen:', e);
@@ -141,7 +143,6 @@ function getMatchedDomain(urlStr, blockedDomains) {
       }
     }
   } catch (e) {
-    // string might just be hostname
     const hostname = urlStr.toLowerCase().trim();
     for (const domain of blockedDomains) {
       const cleanDomain = domain.toLowerCase().trim();
@@ -155,11 +156,9 @@ function getMatchedDomain(urlStr, blockedDomains) {
 
 // Navigation Interceptor
 chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
-  // Only intercept main frame navigation
   if (details.frameId !== 0) return;
 
   const url = details.url;
-  // Ignore chrome-extension URLs and internal pages
   if (url.startsWith('chrome-extension://') || url.startsWith('chrome://') || url.startsWith('about:') || url.startsWith('edge://')) {
     return;
   }
@@ -175,17 +174,14 @@ chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
   const session = sessions[matchedDomain];
   const now = Date.now();
 
-  // If there's an active valid session, allow navigation
   if (session && session.unlockedUntil && session.unlockedUntil > now) {
     return;
   }
 
-  // Increment blocked attempts stat
   const { stats = { totalBlockedAttempts: 0, totalPassed: 0, totalAborted: 0 } } = await chrome.storage.local.get('stats');
   stats.totalBlockedAttempts = (stats.totalBlockedAttempts || 0) + 1;
   await chrome.storage.local.set({ stats });
 
-  // Redirect to the 10-step gate
   const gateUrl = chrome.runtime.getURL('gate.html') +
     `?target=${encodeURIComponent(url)}&domain=${encodeURIComponent(matchedDomain)}`;
   
@@ -213,7 +209,6 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       await chrome.storage.local.set({ sessions });
     }
 
-    // Redirect all active tabs of this domain back to gate or lock them
     const tabs = await chrome.tabs.query({});
     for (const tab of tabs) {
       if (tab.url && getMatchedDomain(tab.url, [domain])) {
@@ -225,7 +220,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
   }
 });
 
-// Message listener from Gate, Popup and Content scripts
+// Message listener
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'CHECK_STATUS') {
     (async () => {
@@ -259,7 +254,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         session
       });
     })();
-    return true; // async response
+    return true;
   }
 
   if (message.type === 'UNLOCK_DOMAIN') {
@@ -278,10 +273,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       };
 
       stats.totalPassed = (stats.totalPassed || 0) + 1;
-
       await chrome.storage.local.set({ sessions, stats });
 
-      // Create alarm for expiry
       chrome.alarms.create(`session_expiry_${domain}`, {
         when: unlockedUntil
       });

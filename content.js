@@ -1,6 +1,7 @@
 /**
  * MindfulBarrier - In-Page Content Script
  * Shows floating session timer and enforces immediate screen lockout on expiry for ANY blocked URL.
+ * Also handles pausing and resuming entertainment media during periodic Istighfar reminders.
  */
 
 (function () {
@@ -18,8 +19,8 @@
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.type === 'PAUSE_ENTERTAINMENT_MEDIA') {
       // 1. SMART MEETING / CALL EXCLUSION:
-      // If the user is on Google Meet, WhatsApp, Microsoft Teams, Zoom, or Messenger Calls:
-      // We NEVER pause or disrupt their call!
+      // If user is on Google Meet, WhatsApp, Microsoft Teams, Zoom, or Messenger Calls:
+      // NEVER pause or interrupt the call!
       const isMeetingCall = 
         currentHost.includes('meet.google.com') ||
         currentHost.includes('web.whatsapp.com') ||
@@ -33,7 +34,7 @@
         return true;
       }
 
-      // 2. PAUSE ALL PLAYING VIDEO / AUDIO ELEMENTS (YouTube, Facebook, Netflix, Spotify, etc.)
+      // 2. Pause all playing video/audio elements (YouTube, Facebook, Netflix, etc.)
       const mediaEls = Array.from(document.querySelectorAll('video, audio'));
       let pausedCount = 0;
       mediaEls.forEach(el => {

@@ -1,5 +1,5 @@
 /**
- * MindfulBarrier - Popup Controller with Checkbox Matrix & Custom URL Blocking
+ * MindfulBarrier - Popup Controller with Checkbox Matrix, Custom URL Blocking & Istighfar Reminder
  */
 
 const PRESETS = [
@@ -87,9 +87,8 @@ document.addEventListener('DOMContentLoaded', async () => {
               url: chrome.runtime.getURL('disable-gate.html') + `?targetDomain=${encodeURIComponent(preset.domain)}`
             });
           }
-          return; // Prevents instant unchecking
+          return;
         } else {
-          // Checking is free and instant
           if (!blockedDomains.includes(preset.domain)) {
             blockedDomains.push(preset.domain);
           }
@@ -107,11 +106,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Render Custom Added Domains (domains not in standard presets)
+  // Render Custom Added Domains
   function renderCustomList() {
     customList.innerHTML = '';
 
-    // Filter out standard preset domains to show in custom list
     const presetDomains = new Set();
     PRESETS.forEach((p) => {
       presetDomains.add(p.domain);
@@ -136,7 +134,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>
       `;
 
-      // Delete custom domain requires 10-step gauntlet
       item.querySelector('.btn-del').addEventListener('click', async () => {
         const confirmDel = confirm(
           `⚠️ "${domain}"-এর ব্লকিং সরাসরি সরানো যাবে না!\n\nএটি সরাতে হলে ১০-ধাপের কগনিটিভ গেট সম্পন্ন করতে হবে।\n\nআপনি কি ১০-ধাপের গেট খুলতে চান?`
@@ -190,7 +187,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // ==========================================
-  // Istighfar Reminder Controller
+  // Periodic Istighfar Reminder Controller
   // ==========================================
   const toggleIstighfar = document.getElementById('toggleIstighfar');
   const istighfarBody = document.getElementById('istighfarBody');
@@ -293,12 +290,25 @@ document.addEventListener('DOMContentLoaded', async () => {
       await chrome.storage.local.set({ istighfarSettings });
     });
 
+    // Test Play Button
     btnTestIstighfar.addEventListener('click', () => {
       btnTestIstighfar.textContent = '⏳ বাজছে...';
+
+      // 1. Direct audio playback inside popup for guaranteed 100% instant sound
+      try {
+        const directAudio = new Audio(chrome.runtime.getURL('sounds/istigfar.wav'));
+        directAudio.volume = 1.0;
+        directAudio.play().catch(e => console.warn('Direct popup play:', e));
+        directAudio.onended = () => {
+          btnTestIstighfar.textContent = '▶️ টেস্ট শুনুন';
+        };
+      } catch (e) {}
+
+      // 2. Trigger background flow to test pausing other tabs
       chrome.runtime.sendMessage({ type: 'TEST_ISTIGHFAR_NOW' }, () => {
         setTimeout(() => {
           btnTestIstighfar.textContent = '▶️ টেস্ট শুনুন';
-        }, 5000);
+        }, 5200);
       });
     });
 
