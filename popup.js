@@ -228,14 +228,52 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       if (countdownInterval) clearInterval(countdownInterval);
-      countdownInterval = setInterval(() => {
-        const now = Date.now();
-        const target = istighfarSettings.nextTriggerTime || (now + (Number(istighfarInterval.value) * 60000));
-        const diff = Math.max(0, Math.floor((target - now) / 1000));
-        const m = Math.floor(diff / 60);
-        const s = diff % 60;
-        istighfarCountdownText.textContent = `পরবর্তী জিকির: ${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')} মিনিট পর`;
-      }, 1000);
+
+      // Check active target time
+      let target = Number(istighfarSettings.nextTriggerTime) || 0;
+      const now = Date.now();
+      const intervalMinutes = Number(istighfarInterval.value) || 1;
+
+      // If target is in the past or not set, compute fresh future target and sync
+      if (target <= now) {
+        target = now + (intervalMinutes * 60 * 1000);
+        istighfarSettings.nextTriggerTime = target;
+        chrome.storage.local.set({ istighfarSettings });
+        chrome.alarms.create('istighfar_reminder_alarm', {
+          delayInMinutes: intervalMinutes,
+          periodInMinutes: intervalMinutes
+        });
+      }
+
+      // Sync with Chrome Alarm scheduledTime if active
+      chrome.alarms.get('istighfar_reminder_alarm', (alarm) => {
+        if (alarm && alarm.scheduledTime && alarm.scheduledTime > Date.now()) {
+          target = alarm.scheduledTime;
+          istighfarSettings.nextTriggerTime = target;
+          tick();
+        }
+      });
+
+      function tick() {
+        const currentNow = Date.now();
+        let remainingSec = Math.floor((target - currentNow) / 1000);
+
+        if (remainingSec <= 0) {
+          istighfarCountdownText.textContent = '⏳ জিকির বাজার সময় হয়েছে...';
+          const nextCycleSec = (Number(istighfarInterval.value) || 1) * 60;
+          target = Date.now() + (nextCycleSec * 1000);
+          istighfarSettings.nextTriggerTime = target;
+          chrome.storage.local.set({ istighfarSettings });
+          return;
+        }
+
+        const m = Math.floor(remainingSec / 60);
+        const s = remainingSec % 60;
+        istighfarCountdownText.textContent = `পরবর্তী জিকির: ${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')} বাকি`;
+      }
+
+      tick();
+      countdownInterval = setInterval(tick, 1000);
     }
 
     toggleIstighfar.addEventListener('change', () => {
@@ -310,6 +348,14 @@ document.addEventListener('DOMContentLoaded', async () => {
           btnTestIstighfar.textContent = '▶️ টেস্ট শুনুন';
         }, 5200);
       });
+    });
+
+    // Listen for background timer triggers
+    chrome.runtime.onMessage.addListener((msg) => {
+      if (msg.type === 'ISTIGHFAR_TRIGGERED' && msg.nextTriggerTime) {
+        istighfarSettings.nextTriggerTime = msg.nextTriggerTime;
+        updateIstighfarUI();
+      }
     });
 
     updateIstighfarUI();

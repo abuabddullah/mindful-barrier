@@ -194,8 +194,10 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     await triggerIstighfarPlayback();
     const { istighfarSettings = DEFAULT_ISTIGHFAR_SETTINGS } = await chrome.storage.local.get('istighfarSettings');
     if (istighfarSettings.enabled) {
-      istighfarSettings.nextTriggerTime = Date.now() + (istighfarSettings.intervalMinutes * 60 * 1000);
+      const nextTime = Date.now() + (istighfarSettings.intervalMinutes * 60 * 1000);
+      istighfarSettings.nextTriggerTime = nextTime;
       await chrome.storage.local.set({ istighfarSettings });
+      chrome.runtime.sendMessage({ type: 'ISTIGHFAR_TRIGGERED', nextTriggerTime: nextTime }).catch(() => {});
     }
     return;
   }
