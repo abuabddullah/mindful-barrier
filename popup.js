@@ -361,6 +361,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateIstighfarUI();
   }
 
+  // ==========================================
+  // Mindful Workout Arena Opener
+  // ==========================================
+  const btnOpenWorkout = document.getElementById('btnOpenWorkout');
+  const quickTotalTime = document.getElementById('quickTotalTime');
+  const quickWorkTime = document.getElementById('quickWorkTime');
+  const quickRestTime = document.getElementById('quickRestTime');
+
+  if (btnOpenWorkout) {
+    btnOpenWorkout.addEventListener('click', () => {
+      const total = quickTotalTime ? quickTotalTime.value : '30';
+      const work = quickWorkTime ? quickWorkTime.value : '30';
+      const rest = quickRestTime ? quickRestTime.value : '30';
+
+      const workoutUrl = chrome.runtime.getURL('workout.html') + `?total=${encodeURIComponent(total)}&work=${encodeURIComponent(work)}&rest=${encodeURIComponent(rest)}`;
+      chrome.tabs.create({ url: workoutUrl });
+    });
+  }
+
   // Initial renders
   renderPresets();
   renderCustomList();

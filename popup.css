@@ -538,3 +538,109 @@ input:checked + .slider:before {
   accent-color: #0ea5e9;
   cursor: pointer;
 }
+
+
+/* ==========================================
+   Workout / HIIT Trainer Section in Popup
+   ========================================== */
+.workout-trigger-section {
+  background: linear-gradient(145deg, #0e1c2e, #091322);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.workout-trigger-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.workout-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #34d399;
+}
+
+.workout-title .icon {
+  font-size: 15px;
+}
+
+.workout-pill {
+  font-size: 10px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.workout-quick-row {
+  display: flex;
+  gap: 6px;
+  justify-content: space-between;
+}
+
+.quick-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.quick-col label {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.workout-select {
+  background: #0f172a;
+  border: 1px solid var(--border);
+  color: #f1f5f9;
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+}
+
+.workout-select:focus {
+  border-color: #10b981;
+}
+
+.btn-launch-workout {
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+}
+
+.btn-launch-workout:hover {
+  background: linear-gradient(135deg, #10b981, #34d399);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45);
+}
+
+.btn-launch-workout .arrow-icon {
+  font-size: 13px;
+  font-weight: 800;
+}

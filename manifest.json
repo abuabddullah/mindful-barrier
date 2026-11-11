@@ -46,6 +46,10 @@
         "icons/icon48.png",
         "icons/icon128.png",
         "sounds/istigfar.wav",
+        "sounds/nasheeed/*",
+        "workout.html",
+        "workout.css",
+        "workout.js",
         "offscreen.html"
       ],
       "matches": ["<all_urls>"]

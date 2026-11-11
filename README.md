@@ -53,6 +53,8 @@
   - Block **ANY custom URL or domain** (e.g., `news.ycombinator.com`, `pinterest.com`, etc.).
 - ⏳ **Floating Draggable Session Timer:** A sleek in-page HUD widget showing remaining seconds with an instant lockout curtain on expiry.
 - 🛡️ **Single-Extension Enterprise Policy Lock (Windows):** Prevents instant disabling or removal on `chrome://extensions` while keeping all your other extensions 100% accessible!
+- ⚡ **HIIT & Interval Workout Arena with Nasheed Auto-Ducking:** Fully customizable workout routines (Work intervals, Rest intervals, Total session duration) with seamless halal vocal nasheed loops and intelligent audio ducking during 5-second transition beeps.
+- 📿 **Periodic Istighfar & Dhikr Reminder:** In-browser periodic audio reminder with smart entertainment media pausing and auto-resuming.
 - 🔒 **100% Private & Offline:** Zero external server calls, zero tracking, zero telemetry. Everything runs on your machine.
 
 ---
@@ -167,6 +169,12 @@ mindful-barrier/
 ├── scripts/                    # Windows Enterprise Lock & 20-Min Delay scripts
 │   ├── Lock-MindfulBarrier-Extension.bat
 │   └── Unlock-MindfulBarrier-20Min.bat
+├── sounds/                     # Audio assets & Vocal Nasheed playlist
+│   ├── istigfar.wav            # Periodic Dhikr reminder
+│   └── nasheeed/               # Halal vocal workout tracks (Fiya Hubbun, Taballigh Bil Qaleel)
+├── workout.html                # High-contrast HIIT Workout Arena HUD
+├── workout.js                  # Interval timer engine & Web Audio Ducking synthesizer
+├── workout.css                 # Dark athletic gym-grade responsive styling
 ├── background.js               # Manifest V3 service worker & domain interceptor
 ├── content.js                  # In-page draggable HUD countdown timer & lockout curtain
 ├── content.css                 # HUD timer styling
