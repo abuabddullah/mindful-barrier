@@ -728,7 +728,6 @@ input:checked + .slider:before {
   transform: translateX(3px);
 }
 
-
 /* Workout Volume Slider in Popup */
 .vol-slider-row {
   display: flex;

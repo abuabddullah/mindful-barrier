@@ -115,7 +115,13 @@ const dom = {
   modalRestSec: document.getElementById('modalRestSec'),
   modalNasheedVol: document.getElementById('modalNasheedVol'),
   modalNasheedVolVal: document.getElementById('modalNasheedVolVal'),
-  btnSaveModalSettings: document.getElementById('btnSaveModalSettings')
+  btnSaveModalSettings: document.getElementById('btnSaveModalSettings'),
+
+  // Preview Buttons (Halal Audio Verification)
+  btnPreviewDrop: document.getElementById('btnPreviewDrop'),
+  btnPreviewGo: document.getElementById('btnPreviewGo'),
+  btnPreviewRest: document.getElementById('btnPreviewRest'),
+  btnPreviewVictory: document.getElementById('btnPreviewVictory')
 };
 
 const CIRCUMFERENCE = 1005.3; // 2 * Math.PI * 160
@@ -240,58 +246,156 @@ function setMasterVolume(vol, immediate = true) {
   localStorage.setItem('mb_workout_vol', String(state.nasheedMasterVolume));
 }
 
-function playGymTone(type) {
+// ==========================================
+// 4. 100% HALAL SOUND ENGINE (Organic Water Drops & Male Voice)
+// ==========================================
+let cachedMaleVoice = null;
+
+function resolveMaleVoice() {
+  if (!('speechSynthesis' in window)) return null;
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices || voices.length === 0) return null;
+
+  // Prioritize natural/deep English Male voices (Microsoft David, Microsoft Mark, George, Google UK/US Male, etc.)
+  const male = voices.find((v) => {
+    const n = v.name.toLowerCase();
+    return (
+      (n.includes('male') && !n.includes('female')) ||
+      n.includes('david') ||
+      n.includes('mark') ||
+      n.includes('george') ||
+      n.includes('guy') ||
+      n.includes('james') ||
+      n.includes('richard')
+    );
+  });
+  if (male) return male;
+
+  // Fallback to an English voice (pitch reduction guarantees deep male tone)
+  const en = voices.find((v) => v.lang.startsWith('en'));
+  if (en) return en;
+
+  return voices[0];
+}
+
+// Warm up voices immediately so they are preloaded without lag
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.getVoices();
+  if (window.speechSynthesis.onvoiceschanged !== undefined) {
+    window.speechSynthesis.onvoiceschanged = () => {
+      cachedMaleVoice = resolveMaleVoice();
+    };
+  }
+}
+
+/**
+ * Synthesizes an authentic, organic water drop sound (Minnaert bubble acoustics).
+ * Pure liquid impact with zero musical notes — 100% natural and halal.
+ */
+function playHalalWaterDrop(pitchMultiplier = 1.0) {
   if (state.isMuted) return;
   if (!state.audioCtx) initAudioEngine();
-  if (state.audioCtx && state.audioCtx.state === 'suspended') state.audioCtx.resume();
+  if (state.audioCtx && state.audioCtx.state === 'suspended') {
+    state.audioCtx.resume().catch(() => {});
+  }
 
   const ctx = state.audioCtx;
   if (!ctx) return;
 
   const now = ctx.currentTime;
+
+  // 1. Primary bubble volume resonance (rapid upward pitch sweep from 380Hz to 1650Hz)
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
+
+  osc.type = 'sine';
+  const startF = 380 * pitchMultiplier;
+  const peakF = 1650 * pitchMultiplier;
+
+  osc.frequency.setValueAtTime(startF, now);
+  osc.frequency.exponentialRampToValueAtTime(peakF, now + 0.048);
+
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.linearRampToValueAtTime(0.8, now + 0.003);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.082);
 
   osc.connect(gain);
   gain.connect(ctx.destination);
 
-  if (type === 'tick') {
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(880, now);
-    gain.gain.setValueAtTime(0.75, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-    osc.start(now);
-    osc.stop(now + 0.12);
-  } else if (type === 'start') {
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(1174.66, now);
-    osc.frequency.exponentialRampToValueAtTime(1760, now + 0.25);
-    gain.gain.setValueAtTime(0.85, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-    osc.start(now);
-    osc.stop(now + 0.35);
-  } else if (type === 'rest') {
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, now);
-    osc.frequency.exponentialRampToValueAtTime(587.33, now + 0.3);
-    gain.gain.setValueAtTime(0.75, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-    osc.start(now);
-    osc.stop(now + 0.4);
-  } else if (type === 'victory') {
-    [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.connect(g);
-      g.connect(ctx.destination);
-      o.type = 'triangle';
-      o.frequency.value = freq;
-      const t = now + (i * 0.14);
-      g.gain.setValueAtTime(0.7, t);
-      g.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
-      o.start(t);
-      o.stop(t + 0.25);
-    });
+  osc.start(now);
+  osc.stop(now + 0.085);
+
+  // 2. Subtle secondary fluid resonance (adds natural organic droplet shimmer)
+  const oscSub = ctx.createOscillator();
+  const gainSub = ctx.createGain();
+
+  oscSub.type = 'sine';
+  oscSub.frequency.setValueAtTime(startF * 1.55, now);
+  oscSub.frequency.exponentialRampToValueAtTime(peakF * 1.2, now + 0.038);
+
+  gainSub.gain.setValueAtTime(0.0001, now);
+  gainSub.gain.linearRampToValueAtTime(0.22, now + 0.002);
+  gainSub.gain.exponentialRampToValueAtTime(0.0001, now + 0.048);
+
+  oscSub.connect(gainSub);
+  gainSub.connect(ctx.destination);
+
+  oscSub.start(now);
+  oscSub.stop(now + 0.05);
+}
+
+/**
+ * Male Voice Cues:
+ * - 'go': Command to start workout set ("Go!")
+ * - 'rest': Calming cue for rest interval ("Rest!" + soothing double water drop)
+ * - 'victory': Islamic praise ("Alhamdulillah! Masha Allah!")
+ */
+function playHalalVoice(type) {
+  if (state.isMuted) return;
+
+  // If REST, also play a calming gentle double water drop alongside the vocal
+  if (type === 'rest') {
+    playHalalWaterDrop(0.9);
+    setTimeout(() => {
+      if (!state.isMuted) playHalalWaterDrop(1.15);
+    }, 110);
+  }
+
+  if (!('speechSynthesis' in window)) return;
+
+  try {
+    window.speechSynthesis.cancel();
+
+    let phrase = 'Go!';
+    let rate = 1.18;
+    let pitch = 0.85; // Deep, masculine pitch
+
+    if (type === 'go') {
+      phrase = 'Go!';
+      rate = 1.22;
+      pitch = 0.85;
+    } else if (type === 'rest') {
+      phrase = 'Rest!';
+      rate = 0.95;
+      pitch = 0.80;
+    } else if (type === 'victory') {
+      phrase = 'Alhamdulillah! Masha Allah!';
+      rate = 0.88;
+      pitch = 0.82;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(phrase);
+    utterance.lang = 'en-US';
+    utterance.rate = rate;
+    utterance.pitch = pitch;
+    utterance.volume = Math.min(1.0, Math.max(0.65, state.nasheedMasterVolume));
+
+    if (!cachedMaleVoice) cachedMaleVoice = resolveMaleVoice();
+    if (cachedMaleVoice) utterance.voice = cachedMaleVoice;
+
+    window.speechSynthesis.speak(utterance);
+  } catch (err) {
+    console.warn('Speech cue error:', err);
   }
 }
 
@@ -393,7 +497,7 @@ function transitionToPhase(newPhase) {
     dom.hudStateLabel.textContent = 'WORK OUT';
     dom.hudSubHint.textContent = 'পুশ করুন! সর্বোচ্চ মনোযোগ দিন!';
     dom.hudNextPhase.textContent = `☕ ${state.restSeconds} সে. বিশ্রাম`;
-    playGymTone('start');
+    playHalalVoice('go');
     setNasheedDucking(false);
   } else if (newPhase === 'REST') {
     document.body.classList.add('theme-rest');
@@ -404,7 +508,7 @@ function transitionToPhase(newPhase) {
     dom.hudStateLabel.textContent = 'REST';
     dom.hudSubHint.textContent = 'গভীর শ্বাস নিন, পানি পান করুন...';
     dom.hudNextPhase.textContent = `🔥 ${state.workSeconds} সে. ওয়ার্ক`;
-    playGymTone('rest');
+    playHalalVoice('rest');
     setNasheedDucking(false);
   }
 
@@ -429,11 +533,13 @@ function startTimerLoop() {
 
       const wholeSecond = Math.ceil(state.phaseRemainingSeconds);
 
-      // AUDIO DUCKING & COUNTDOWN TRIGGER (In the last 5 seconds)
+      // 100% HALAL ORGANIC WATER DROP COUNTDOWN (In the last 5 seconds)
       if (wholeSecond <= 5 && wholeSecond > 0 && wholeSecond !== state.lastBeepSecond) {
         state.lastBeepSecond = wholeSecond;
         setNasheedDucking(true);
-        playGymTone('tick');
+        // Clean organic water drop (crisper tone on final 1 second drop before "Go!")
+        const pitchFactor = (wholeSecond === 1) ? 1.25 : 1.0;
+        playHalalWaterDrop(pitchFactor);
       }
 
       if (state.phaseRemainingSeconds <= 0) {
@@ -547,7 +653,8 @@ function finishWorkout() {
     }, 1200);
   }
 
-  playGymTone('victory');
+  // 100% Halal Male Vocal Celebration: "Alhamdulillah! Masha Allah!"
+  playHalalVoice('victory');
 
   const totalSecsSpent = Math.min(state.totalWorkoutSeconds, Math.round(state.totalWorkoutSeconds - state.totalRemainingSeconds));
   const totM = Math.floor(totalSecsSpent / 60);
@@ -663,6 +770,28 @@ dom.btnSaveModalSettings.addEventListener('click', () => {
   dom.settingsModal.classList.add('hidden');
   launchWorkoutDirectly();
 });
+
+// Preview Buttons Listeners (Halal Audio Verification)
+if (dom.btnPreviewDrop) {
+  dom.btnPreviewDrop.addEventListener('click', () => {
+    playHalalWaterDrop(1.0);
+  });
+}
+if (dom.btnPreviewGo) {
+  dom.btnPreviewGo.addEventListener('click', () => {
+    playHalalVoice('go');
+  });
+}
+if (dom.btnPreviewRest) {
+  dom.btnPreviewRest.addEventListener('click', () => {
+    playHalalVoice('rest');
+  });
+}
+if (dom.btnPreviewVictory) {
+  dom.btnPreviewVictory.addEventListener('click', () => {
+    playHalalVoice('victory');
+  });
+}
 
 // Keyboard Shortcuts
 window.addEventListener('keydown', (e) => {
