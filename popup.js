@@ -405,6 +405,29 @@ document.addEventListener('DOMContentLoaded', async () => {
   const inputCustomRest = document.getElementById('inputCustomRest');
 
   const chkWorkoutNasheed = document.getElementById('chkWorkoutNasheed');
+  const sliderWorkoutNasheedVol = document.getElementById('sliderWorkoutNasheedVol');
+  const valNasheedVolBadge = document.getElementById('valNasheedVolBadge');
+
+  function toBnDigits(n) {
+    const bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    return String(n).replace(/[0-9]/g, (d) => bn[d]);
+  }
+
+  if (sliderWorkoutNasheedVol) {
+    const savedVol = localStorage.getItem('mb_workout_vol');
+    if (savedVol !== null) {
+      sliderWorkoutNasheedVol.value = savedVol;
+      const pct = Math.round(parseFloat(savedVol) * 100);
+      if (valNasheedVolBadge) valNasheedVolBadge.textContent = `${toBnDigits(pct)}%`;
+    }
+
+    sliderWorkoutNasheedVol.addEventListener('input', () => {
+      const vol = parseFloat(sliderWorkoutNasheedVol.value);
+      const pct = Math.round(vol * 100);
+      if (valNasheedVolBadge) valNasheedVolBadge.textContent = `${toBnDigits(pct)}%`;
+      localStorage.setItem('mb_workout_vol', String(vol));
+    });
+  }
 
   function bindCustomToggle(selectEl, wrapEl, inputEl, defaultVal) {
     if (!selectEl || !wrapEl) return;
@@ -438,12 +461,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         : parseInt(quickRestTime ? quickRestTime.value : 30, 10);
 
       const enableNasheed = chkWorkoutNasheed ? chkWorkoutNasheed.checked : true;
+      const nasheedVol = sliderWorkoutNasheedVol ? sliderWorkoutNasheedVol.value : '0.85';
 
       const params = new URLSearchParams({
         total: total,
         work: work,
         rest: rest,
         nasheed: enableNasheed ? '1' : '0',
+        volume: nasheedVol,
         autostart: 'true'
       });
 

@@ -63,6 +63,10 @@ const state = {
 const dom = {
   // Header
   wakelockPill: document.getElementById('wakelockPill'),
+  headerVolControl: document.getElementById('headerVolControl'),
+  headerVolSlider: document.getElementById('headerVolSlider'),
+  headerVolVal: document.getElementById('headerVolVal'),
+  headerVolIcon: document.getElementById('headerVolIcon'),
   btnToggleSound: document.getElementById('btnToggleSound'),
   soundIcon: document.getElementById('soundIcon'),
   btnToggleFullscreen: document.getElementById('btnToggleFullscreen'),
@@ -110,6 +114,7 @@ const dom = {
   modalWorkSec: document.getElementById('modalWorkSec'),
   modalRestSec: document.getElementById('modalRestSec'),
   modalNasheedVol: document.getElementById('modalNasheedVol'),
+  modalNasheedVolVal: document.getElementById('modalNasheedVolVal'),
   btnSaveModalSettings: document.getElementById('btnSaveModalSettings')
 };
 
@@ -175,7 +180,7 @@ function setNasheedDucking(shouldDuck, immediate = false) {
   const rampTime = immediate ? 0.05 : 0.35;
   state.nasheedGainNode.gain.cancelScheduledValues(now);
 
-  if (state.isMuted || !state.nasheedEnabled) {
+  if (state.isMuted || !state.nasheedEnabled || state.nasheedMasterVolume <= 0.001) {
     state.nasheedGainNode.gain.setValueAtTime(0, now);
     dom.hudDuckingIndicator.textContent = '🔇 Muted';
     dom.hudDuckingIndicator.className = 'ducking-indicator ducked';
@@ -194,6 +199,45 @@ function setNasheedDucking(shouldDuck, immediate = false) {
     dom.hudDuckingIndicator.textContent = (state.currentPhase === 'REST') ? '🎵 Calm Rest' : '🔥 Full Energy';
     dom.hudDuckingIndicator.className = 'ducking-indicator';
   }
+}
+
+function toBnDigits(n) {
+  const bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+  return String(n).replace(/[0-9]/g, (d) => bn[d]);
+}
+
+function updateVolDisplay(vol) {
+  const pct = Math.round(vol * 100);
+  const bnText = `${toBnDigits(pct)}%`;
+  if (dom.headerVolVal) dom.headerVolVal.textContent = bnText;
+  if (dom.modalNasheedVolVal) dom.modalNasheedVolVal.textContent = bnText;
+  if (dom.headerVolSlider) dom.headerVolSlider.value = vol;
+  if (dom.modalNasheedVol) dom.modalNasheedVol.value = vol;
+
+  if (dom.headerVolIcon) {
+    if (state.isMuted || vol <= 0.01) {
+      dom.headerVolIcon.textContent = '🔇';
+    } else if (vol < 0.5) {
+      dom.headerVolIcon.textContent = '🔉';
+    } else {
+      dom.headerVolIcon.textContent = '🔊';
+    }
+  }
+}
+
+function setMasterVolume(vol, immediate = true) {
+  state.nasheedMasterVolume = Math.max(0, Math.min(1, vol));
+  if (state.nasheedMasterVolume > 0 && state.isMuted) {
+    state.isMuted = false;
+    if (dom.soundIcon) dom.soundIcon.textContent = '🔊';
+    if (dom.headerVolSlider) dom.headerVolSlider.style.opacity = '1';
+  }
+  updateVolDisplay(state.nasheedMasterVolume);
+
+  if (state.isAudioGraphReady && state.nasheedGainNode) {
+    setNasheedDucking(state.isDucked, immediate);
+  }
+  localStorage.setItem('mb_workout_vol', String(state.nasheedMasterVolume));
 }
 
 function playGymTone(type) {
@@ -544,12 +588,38 @@ dom.btnToggleSound.addEventListener('click', () => {
   state.isMuted = !state.isMuted;
   if (state.isMuted) {
     dom.soundIcon.textContent = '🔇';
-    if (state.nasheedGainNode) state.nasheedGainNode.gain.setValueAtTime(0, state.audioCtx.currentTime);
+    if (dom.headerVolIcon) dom.headerVolIcon.textContent = '🔇';
+    if (dom.headerVolSlider) dom.headerVolSlider.style.opacity = '0.5';
+    if (state.nasheedGainNode && state.audioCtx) {
+      state.nasheedGainNode.gain.cancelScheduledValues(state.audioCtx.currentTime);
+      state.nasheedGainNode.gain.setValueAtTime(0, state.audioCtx.currentTime);
+    }
+    dom.hudDuckingIndicator.textContent = '🔇 Muted';
+    dom.hudDuckingIndicator.className = 'ducking-indicator ducked';
   } else {
     dom.soundIcon.textContent = '🔊';
+    if (dom.headerVolSlider) dom.headerVolSlider.style.opacity = '1';
+    if (state.nasheedMasterVolume <= 0.05) {
+      state.nasheedMasterVolume = 0.85;
+    }
+    updateVolDisplay(state.nasheedMasterVolume);
     setNasheedDucking(state.isDucked, true);
   }
 });
+
+// Live Header Volume Control
+if (dom.headerVolSlider) {
+  dom.headerVolSlider.addEventListener('input', () => {
+    const v = parseFloat(dom.headerVolSlider.value);
+    setMasterVolume(v, true);
+  });
+}
+
+if (dom.headerVolIcon) {
+  dom.headerVolIcon.addEventListener('click', () => {
+    dom.btnToggleSound.click();
+  });
+}
 
 // Fullscreen Toggle
 dom.btnToggleFullscreen.addEventListener('click', () => {
@@ -566,8 +636,18 @@ dom.btnQuickSettings.addEventListener('click', () => {
   dom.modalWorkSec.value = state.workSeconds;
   dom.modalRestSec.value = state.restSeconds;
   dom.modalNasheedVol.value = state.nasheedMasterVolume;
+  if (dom.modalNasheedVolVal) {
+    dom.modalNasheedVolVal.textContent = `${toBnDigits(Math.round(state.nasheedMasterVolume * 100))}%`;
+  }
   dom.settingsModal.classList.remove('hidden');
 });
+
+if (dom.modalNasheedVol) {
+  dom.modalNasheedVol.addEventListener('input', () => {
+    const v = parseFloat(dom.modalNasheedVol.value);
+    setMasterVolume(v, true);
+  });
+}
 
 dom.btnCloseModal.addEventListener('click', () => {
   dom.settingsModal.classList.add('hidden');
@@ -577,7 +657,8 @@ dom.btnSaveModalSettings.addEventListener('click', () => {
   state.totalMinutes = Math.max(1, parseInt(dom.modalTotalMin.value, 10) || 30);
   state.workSeconds = Math.max(5, parseInt(dom.modalWorkSec.value, 10) || 30);
   state.restSeconds = Math.max(5, parseInt(dom.modalRestSec.value, 10) || 30);
-  state.nasheedMasterVolume = parseFloat(dom.modalNasheedVol.value) || 0.85;
+  const vol = parseFloat(dom.modalNasheedVol.value);
+  setMasterVolume(isNaN(vol) ? 0.85 : vol, true);
 
   dom.settingsModal.classList.add('hidden');
   launchWorkoutDirectly();
@@ -616,6 +697,14 @@ document.addEventListener('DOMContentLoaded', () => {
   if (urlParams.has('work')) state.workSeconds = parseInt(urlParams.get('work'), 10) || 30;
   if (urlParams.has('rest')) state.restSeconds = parseInt(urlParams.get('rest'), 10) || 30;
   if (urlParams.has('nasheed')) state.nasheedEnabled = (urlParams.get('nasheed') !== '0');
+
+  const savedVol = localStorage.getItem('mb_workout_vol');
+  if (urlParams.has('volume')) {
+    state.nasheedMasterVolume = Math.max(0, Math.min(1, parseFloat(urlParams.get('volume')) || 0.85));
+  } else if (savedVol !== null) {
+    state.nasheedMasterVolume = Math.max(0, Math.min(1, parseFloat(savedVol) || 0.85));
+  }
+  updateVolDisplay(state.nasheedMasterVolume);
 
   // Immediately Launch Arena Directly! (No intermediate setup clutter)
   launchWorkoutDirectly();

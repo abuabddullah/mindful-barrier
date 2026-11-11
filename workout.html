@@ -25,6 +25,13 @@
         <span class="text">Screen Awake</span>
       </div>
 
+      <!-- Live Nasheed Volume Control -->
+      <div class="header-vol-control" id="headerVolControl" title="নাসিদের সাউন্ড ভলিউম (লাইভ পরিবর্তন করুন)">
+        <span class="header-vol-icon" id="headerVolIcon">🔉</span>
+        <input type="range" id="headerVolSlider" min="0" max="1" step="0.05" value="0.85" class="header-vol-slider" aria-label="নাসিদ সাউন্ড ভলিউম">
+        <span class="header-vol-val" id="headerVolVal">৮৫%</span>
+      </div>
+
       <button id="btnToggleSound" class="icon-btn" title="সাউন্ড মিউট / আনমিউট (M)">
         <span id="soundIcon">🔊</span>
       </button>
@@ -46,7 +53,7 @@
     <!-- VIEW: ACTIVE WORKOUT ARENA (DIRECT ENTRY)  -->
     <!-- ========================================== -->
     <section class="arena-layout" id="viewArena">
-      
+
       <!-- Top Stats Row -->
       <div class="arena-top-bar">
         <div class="arena-stat-badge">
@@ -187,8 +194,11 @@
           <input type="number" id="modalRestSec" min="5" max="300">
         </div>
         <div class="modal-field">
-          <label>নাসিদ ভলিউম:</label>
-          <input type="range" id="modalNasheedVol" min="0.1" max="1.0" step="0.05" value="0.85">
+          <div class="modal-field-header">
+            <label for="modalNasheedVol">নাসিদ ভলিউম:</label>
+            <span id="modalNasheedVolVal" class="modal-vol-val">৮৫%</span>
+          </div>
+          <input type="range" id="modalNasheedVol" min="0" max="1" step="0.05" value="0.85" class="modal-vol-range">
         </div>
       </div>
       <div class="modal-footer">
