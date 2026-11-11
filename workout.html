@@ -1,25 +1,26 @@
 <!DOCTYPE html>
 <html lang="bn">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MindfulBarrier — ইন্টারভাল ওয়ার্কআউট এরিনা ⚡</title>
+  <title>MindfulBarrier — ওয়ার্কআউট এরিনা ⚡</title>
   <link rel="icon" type="image/png" href="icons/icon48.png">
   <link rel="stylesheet" href="workout.css">
 </head>
-<body class="theme-ready">
-  <!-- Top Navigation Bar -->
+
+<body class="theme-prep">
+  <!-- Minimalist Compact Header -->
   <header class="workout-header">
     <div class="header-left">
       <img src="icons/icon48.png" alt="MindfulBarrier" class="header-logo">
       <div class="header-titles">
         <h1>MindfulBarrier <span class="highlight-badge">Workout Arena ⚡</span></h1>
-        <p class="subtitle" id="headerSubtitle">ইন্টারভাল ট্রেইনার ও নাসিদ অটো-ডাকিং ইঞ্জিন</p>
       </div>
     </div>
 
     <div class="header-right">
-      <div class="wakelock-pill active" id="wakelockPill" title="স্ক্রিন অটো-লক হবে না (Wake Lock সক্রিয়)">
+      <div class="wakelock-pill active" id="wakelockPill" title="স্ক্রিন অন থাকবে (Wake Lock সক্রিয়)">
         <span class="dot"></span>
         <span class="text">Screen Awake</span>
       </div>
@@ -32,277 +33,102 @@
         <span id="fullscreenIcon">⛶</span>
       </button>
 
-      <button id="btnOpenSetup" class="icon-btn secondary" title="সেটিংস পরিবর্তন করুন">
+      <button id="btnQuickSettings" class="icon-btn secondary" title="সময় সামঞ্জস্য করুন">
         <span>⚙️</span>
       </button>
     </div>
   </header>
 
-  <!-- Main Container -->
+  <!-- Main Viewport-Locked Arena -->
   <main class="workout-main">
-    
+
     <!-- ========================================== -->
-    <!-- VIEW 1: SETUP & CONFIGURATION SCREEN       -->
+    <!-- VIEW: ACTIVE WORKOUT ARENA (DIRECT ENTRY)  -->
     <!-- ========================================== -->
-    <section class="view-panel" id="viewSetup">
-      <div class="setup-card">
-        <div class="setup-header">
-          <h2>🏋️ আপনার ওয়ার্কআউট রুটিন কনফিগার করুন</h2>
-          <p>আপনার চাহিদা অনুযায়ী মোট সময়, ব্যায়ামের সময় এবং বিশ্রামের সময় নির্ধারণ করুন।</p>
+    <section class="arena-layout" id="viewArena">
+      
+      <!-- Top Stats Row -->
+      <div class="arena-top-bar">
+        <div class="arena-stat-badge">
+          <span class="label">মোট বাকি সময়</span>
+          <span class="value" id="hudTotalRemaining">29:55</span>
         </div>
 
-        <!-- Quick Presets -->
-        <div class="presets-row">
-          <label class="section-label">⚡ দ্রুত প্রিসেট সিলেক্ট করুন:</label>
-          <div class="preset-chips">
-            <button type="button" class="preset-chip active" data-work="30" data-rest="30" data-total="30">
-              <span class="chip-title">৩০ সে. ওয়ার্ক / ৩০ সে. রেস্ট</span>
-              <span class="chip-desc">ক্লাসিক HIIT (৩০ মিনিট)</span>
-            </button>
-            <button type="button" class="preset-chip" data-work="45" data-rest="15" data-total="20">
-              <span class="chip-title">৪৫ সে. ওয়ার্ক / ১৫ সে. রেস্ট</span>
-              <span class="chip-desc">হাই বার্ন টাবাটা (২০ মিনিট)</span>
-            </button>
-            <button type="button" class="preset-chip" data-work="60" data-rest="60" data-total="30">
-              <span class="chip-title">৬০ সে. ওয়ার্ক / ৬০ সে. রেস্ট</span>
-              <span class="chip-desc">স্ট্রেন্থ ও ওয়েট (৩০ মিনিট)</span>
-            </button>
-            <button type="button" class="preset-chip" data-work="60" data-rest="30" data-total="45">
-              <span class="chip-title">৬০ সে. ওয়ার্ক / ৩০ সে. রেস্ট</span>
-              <span class="chip-desc">পাওয়ার কার্ডিও (৪৫ মিনিট)</span>
-            </button>
-          </div>
+        <div class="arena-phase-badge phase-prep" id="hudPhaseBadge">
+          <span class="pulse-indicator"></span>
+          <span class="phase-text" id="hudPhaseText">⚡ প্রস্তুত হন</span>
         </div>
 
-        <!-- Detailed Custom Controls -->
-        <div class="custom-grid">
-          <!-- Total Time -->
-          <div class="param-box">
-            <div class="param-label-row">
-              <span class="param-title">⏱️ সর্বমোট ওয়ার্কআউট সময়:</span>
-              <span class="param-value" id="valTotalMinutes">৩০ মিনিট</span>
-            </div>
-            <input type="range" id="sliderTotalMinutes" min="5" max="90" step="5" value="30" class="styled-range">
-            <div class="range-marks">
-              <span>৫ মি.</span>
-              <span>২০ মি.</span>
-              <span>৩০ মি.</span>
-              <span>৪৫ মি.</span>
-              <span>৬০ মি.+</span>
-            </div>
-          </div>
+        <div class="arena-stat-badge">
+          <span class="label">বর্তমান সেট</span>
+          <span class="value" id="hudSetProgress">১ / ৩০</span>
+        </div>
+      </div>
 
-          <!-- Work Interval -->
-          <div class="param-box highlight-work">
-            <div class="param-label-row">
-              <span class="param-title">🔥 এক্সারসাইজ / ওয়ার্ক সময় (প্রতি সেট):</span>
-              <span class="param-value" id="valWorkSeconds">৩০ সেকেন্ড</span>
-            </div>
-            <input type="range" id="sliderWorkSeconds" min="15" max="180" step="5" value="30" class="styled-range">
-            <div class="range-marks">
-              <span>১৫ সে.</span>
-              <span>৩০ সে.</span>
-              <span>৪৫ সে.</span>
-              <span>৬০ সে.</span>
-              <span>৯০ সে.+</span>
-            </div>
-          </div>
+      <!-- Center Stage: Scalable Circle -->
+      <div class="arena-center-stage">
+        <div class="timer-circle-container">
+          <!-- SVG Progress Ring -->
+          <svg class="progress-ring" viewBox="0 0 360 360">
+            <circle class="ring-bg" cx="180" cy="180" r="160"></circle>
+            <circle class="ring-fg" id="ringProgress" cx="180" cy="180" r="160"></circle>
+          </svg>
 
-          <!-- Rest Interval -->
-          <div class="param-box highlight-rest">
-            <div class="param-label-row">
-              <span class="param-title">☕ রেস্ট / বিশ্রাম সময় (প্রতি সেট):</span>
-              <span class="param-value" id="valRestSeconds">৩০ সেকেন্ড</span>
-            </div>
-            <input type="range" id="sliderRestSeconds" min="10" max="120" step="5" value="30" class="styled-range">
-            <div class="range-marks">
-              <span>১০ সে.</span>
-              <span>১৫ সে.</span>
-              <span>৩০ সে.</span>
-              <span>৪৫ সে.</span>
-              <span>৬০ সে.+</span>
-            </div>
-          </div>
-
-          <!-- Prep Countdown -->
-          <div class="param-box">
-            <div class="param-label-row">
-              <span class="param-title">⚡ শুরুতে প্রস্তুতির সময় (Countdown):</span>
-              <span class="param-value" id="valPrepSeconds">৫ সেকেন্ড</span>
-            </div>
-            <div class="radio-chips">
-              <label class="radio-chip">
-                <input type="radio" name="prepTime" value="3">
-                <span>৩ সেকেন্ড</span>
-              </label>
-              <label class="radio-chip selected">
-                <input type="radio" name="prepTime" value="5" checked>
-                <span>৫ সেকেন্ড (প্রস্তাবিত)</span>
-              </label>
-              <label class="radio-chip">
-                <input type="radio" name="prepTime" value="10">
-                <span>১০ সেকেন্ড</span>
-              </label>
-            </div>
+          <!-- Digits & State Labels -->
+          <div class="timer-digits-box">
+            <span class="timer-state-label" id="hudStateLabel">GET READY</span>
+            <span class="timer-giant-digits" id="hudIntervalDigits">00:05</span>
+            <span class="timer-sub-hint" id="hudSubHint">প্রথম সেটের জন্য তৈরি হোন...</span>
           </div>
         </div>
+      </div>
 
-        <!-- Nasheed Audio Preview & Ducking Card -->
-        <div class="nasheed-preview-card">
-          <div class="nasheed-header-row">
-            <div class="nasheed-title">
-              <span class="icon">📿</span>
-              <span>ব্যাকগ্রাউন্ড নাসিদ অটো-ডাকিং ইঞ্জিন</span>
-            </div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="chkEnableNasheed" checked>
-              <span class="toggle-slider"></span>
-            </label>
+      <!-- Bottom Info Row -->
+      <div class="arena-info-row">
+        <div class="now-playing-badge" id="hudNowPlayingBadge">
+          <div class="equalizer-bars" id="equalizerBars">
+            <span></span><span></span><span></span><span></span>
           </div>
-          <p class="nasheed-explanation">
-            ওয়ার্কআউট জুড়ে দুটি ভোকাল নাসিদ ব্যাকগ্রাউন্ডে নন-স্টপ লুপ হবে। প্রতিটি সেটের শেষ ৫ সেকেন্ডে কাউন্টডাউন স্পষ্ট করতে 
-            <strong>নাসিদের ভলিউম স্বয়ংক্রিয়ভাবে ডাউন (Ducked)</strong> হবে এবং সেট শুরু হলে আবার ফুল ভলিউমে বেজে উঠবে।
-          </p>
-
-          <div class="playlist-preview-list">
-            <div class="playlist-item">
-              <span class="num">১</span>
-              <span class="song-name">🎵 Fiya Hubbun (فيّ حبٌ) — আব্দুল্লাহ আল-জারাল্লাহ</span>
-              <span class="tag">ভোকাল</span>
-            </div>
-            <div class="playlist-item">
-              <span class="num">২</span>
-              <span class="song-name">🎵 Taballigh Bil Qaleel (تبلغ بالقليل) — ওসামা আল-সাফি</span>
-              <span class="tag">ভোকাল</span>
-            </div>
-          </div>
-
-          <div class="volume-slider-row">
-            <span class="vol-lbl">নাসিদ ভলিউম:</span>
-            <input type="range" id="sliderNasheedVolume" min="0.1" max="1.0" step="0.05" value="0.85" class="styled-range small">
-            <span class="vol-pct" id="valNasheedVolume">৮৫%</span>
-          </div>
+          <span class="song-title" id="hudSongTitle">🎵 Fiya Hubbun (فيّ حبٌ)</span>
+          <span class="ducking-indicator" id="hudDuckingIndicator">🔊 Full Energy</span>
         </div>
 
-        <!-- Calculated Summary Bar -->
-        <div class="calculated-summary-bar">
-          <div class="calc-item">
-            <span class="calc-lbl">মোট সেট হবে</span>
-            <span class="calc-val" id="calcTotalSets">৩০টি সেট</span>
-          </div>
-          <div class="calc-item">
-            <span class="calc-lbl">মোট ব্যায়াম সময়</span>
-            <span class="calc-val text-green" id="calcActiveWork">১৫ মিনিট</span>
-          </div>
-          <div class="calc-item">
-            <span class="calc-lbl">মোট বিশ্রাম সময়</span>
-            <span class="calc-val text-blue" id="calcActiveRest">১৫ মিনিট</span>
-          </div>
+        <div class="next-phase-badge">
+          <span class="next-lbl">পরবর্তী:</span>
+          <span class="next-val" id="hudNextPhase">🔥 ৩০ সে. ওয়ার্ক</span>
         </div>
+      </div>
 
-        <!-- Launch Button -->
-        <div class="setup-footer">
-          <button id="btnStartWorkout" class="btn-giant-start">
-            <span class="btn-icon">🔥</span>
-            <span>ওয়ার্কআউট শুরু করুন</span>
-            <span class="btn-keyhint">[ Space / Enter ]</span>
-          </button>
-        </div>
+      <!-- Overall Session Progress Bar -->
+      <div class="session-progress-wrapper">
+        <div class="session-progress-bar" id="sessionProgressBar" style="width: 0%;"></div>
+      </div>
+
+      <!-- Controls Row -->
+      <div class="arena-controls-bar">
+        <button id="btnPauseResume" class="ctrl-btn main" title="পজ বা চালু করুন (Spacebar)">
+          <span id="btnPauseIcon">⏸️</span>
+          <span id="btnPauseText">পজ</span>
+        </button>
+
+        <button id="btnSkipPhase" class="ctrl-btn secondary" title="পরবর্তী ফেজে স্কিপ করুন (Right Arrow)">
+          <span>⏭️ স্কিপ</span>
+        </button>
+
+        <button id="btnRestartInterval" class="ctrl-btn secondary" title="বর্তমান সেট রিস্টার্ট করুন">
+          <span>🔄 রিস্টার্ট</span>
+        </button>
+
+        <button id="btnStopWorkout" class="ctrl-btn danger" title="ওয়ার্কআউট শেষ করুন (Esc)">
+          <span>⏹️ সমাপ্ত</span>
+        </button>
       </div>
     </section>
 
-
     <!-- ========================================== -->
-    <!-- VIEW 2: ACTIVE WORKOUT HUD (THE ARENA)     -->
+    <!-- VIEW: CELEBRATION (WORKOUT FINISHED)       -->
     <!-- ========================================== -->
-    <section class="view-panel hidden" id="viewArena">
-      <div class="arena-layout">
-        
-        <!-- Top Stats Row -->
-        <div class="arena-top-bar">
-          <div class="arena-stat-badge">
-            <span class="label">মোট বাকি সময়</span>
-            <span class="value" id="hudTotalRemaining">29:55</span>
-          </div>
-
-          <div class="arena-phase-badge" id="hudPhaseBadge">
-            <span class="pulse-indicator"></span>
-            <span class="phase-text" id="hudPhaseText">⚡ প্রস্তুত হন</span>
-          </div>
-
-          <div class="arena-stat-badge">
-            <span class="label">বর্তমান সেট</span>
-            <span class="value" id="hudSetProgress">১ / ৩০</span>
-          </div>
-        </div>
-
-        <!-- Center Giant Display -->
-        <div class="arena-center-stage">
-          <div class="timer-circle-container">
-            <!-- SVG Progress Ring -->
-            <svg class="progress-ring" viewBox="0 0 360 360">
-              <circle class="ring-bg" cx="180" cy="180" r="160"></circle>
-              <circle class="ring-fg" id="ringProgress" cx="180" cy="180" r="160"></circle>
-            </svg>
-
-            <!-- Digital Digits & State Info -->
-            <div class="timer-digits-box">
-              <span class="timer-state-label" id="hudStateLabel">GET READY</span>
-              <span class="timer-giant-digits" id="hudIntervalDigits">00:05</span>
-              <span class="timer-sub-hint" id="hudSubHint">প্রথম সেটের জন্য তৈরি হোন...</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Bottom Status & Now Playing Bar -->
-        <div class="arena-info-row">
-          <div class="now-playing-badge" id="hudNowPlayingBadge">
-            <div class="equalizer-bars" id="equalizerBars">
-              <span></span><span></span><span></span><span></span>
-            </div>
-            <span class="song-title" id="hudSongTitle">🎵 Fiya Hubbun (فيّ حبٌ)</span>
-            <span class="ducking-indicator" id="hudDuckingIndicator">🔊 Full Energy</span>
-          </div>
-
-          <div class="next-phase-badge">
-            <span class="next-lbl">পরবর্তী ধাপ:</span>
-            <span class="next-val" id="hudNextPhase">🔥 ৩০ সেকেন্ড ওয়ার্কআউট</span>
-          </div>
-        </div>
-
-        <!-- Overall Session Progress Bar -->
-        <div class="session-progress-wrapper">
-          <div class="session-progress-bar" id="sessionProgressBar" style="width: 0%;"></div>
-        </div>
-
-        <!-- Action Control Buttons -->
-        <div class="arena-controls-bar">
-          <button id="btnPauseResume" class="ctrl-btn main" title="পজ বা চালু করুন (Spacebar)">
-            <span id="btnPauseIcon">⏸️</span>
-            <span id="btnPauseText">পজ</span>
-          </button>
-
-          <button id="btnSkipPhase" class="ctrl-btn secondary" title="পরবর্তী ফেজে স্কিপ করুন (Right Arrow)">
-            <span>⏭️ স্কিপ</span>
-          </button>
-
-          <button id="btnRestartInterval" class="ctrl-btn secondary" title="বর্তমান সেট রিস্টার্ট করুন">
-            <span>🔄 রিস্টার্ট</span>
-          </button>
-
-          <button id="btnStopWorkout" class="ctrl-btn danger" title="ওয়ার্কআউট শেষ করুন (Esc)">
-            <span>⏹️ সমাপ্ত</span>
-          </button>
-        </div>
-
-      </div>
-    </section>
-
-
-    <!-- ========================================== -->
-    <!-- VIEW 3: WORKOUT COMPLETE CELEBRATION       -->
-    <!-- ========================================== -->
-    <section class="view-panel hidden" id="viewComplete">
+    <section class="celebration-panel hidden" id="viewComplete">
       <div class="celebration-card">
         <div class="trophy-glow">🏆</div>
         <h2>আলহামদুলিল্লাহ! ওয়ার্কআউট সম্পন্ন হয়েছে!</h2>
@@ -328,8 +154,11 @@
         </div>
 
         <div class="celebration-actions">
-          <button id="btnStartNewWorkout" class="btn-giant-start">
-            <span>🔄 নতুন সেশন শুরু করুন</span>
+          <button id="btnRestartSession" class="ctrl-btn main">
+            <span>🔄 পুনরায় একই সেশন শুরু করুন</span>
+          </button>
+          <button id="btnCloseTab" class="ctrl-btn secondary">
+            <span>✕ ট্যাব বন্ধ করুন</span>
           </button>
         </div>
       </div>
@@ -337,6 +166,38 @@
 
   </main>
 
+  <!-- Quick Floating Settings Modal (Optional adjustments on the fly) -->
+  <div class="modal-overlay hidden" id="settingsModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>⚙️ ওয়ার্কআউট সেটিংস পরিবর্তন</h3>
+        <button class="btn-close-modal" id="btnCloseModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-field">
+          <label>মোট ওয়ার্কআউট সময় (মিনিট):</label>
+          <input type="number" id="modalTotalMin" min="1" max="180">
+        </div>
+        <div class="modal-field">
+          <label>ব্যায়াম সময় (সেকেন্ড):</label>
+          <input type="number" id="modalWorkSec" min="5" max="600">
+        </div>
+        <div class="modal-field">
+          <label>বিশ্রাম সময় (সেকেন্ড):</label>
+          <input type="number" id="modalRestSec" min="5" max="300">
+        </div>
+        <div class="modal-field">
+          <label>নাসিদ ভলিউম:</label>
+          <input type="range" id="modalNasheedVol" min="0.1" max="1.0" step="0.05" value="0.85">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnSaveModalSettings" class="ctrl-btn main">সেভ করে রিস্টার্ট করুন</button>
+      </div>
+    </div>
+  </div>
+
   <script src="workout.js"></script>
 </body>
+
 </html>

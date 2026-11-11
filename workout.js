@@ -1,6 +1,6 @@
 /**
- * MindfulBarrier — High-Performance Interval Workout Engine & Nasheed Ducking System
- * Built with Web Audio API, Delta Clock, and Screen WakeLock.
+ * MindfulBarrier — High-Performance Interval Workout Arena
+ * Direct Start, Seamless Vocal Nasheed Looping, and 5-Second Audio Ducking Engine
  */
 
 // ==========================================
@@ -36,7 +36,7 @@ const state = {
   currentPhase: 'PREP', // 'PREP' | 'WORK' | 'REST' | 'COMPLETE'
   currentSet: 1,
   totalSets: 30,
-  
+
   // Timing
   phaseDuration: 5,
   phaseRemainingSeconds: 5,
@@ -44,9 +44,7 @@ const state = {
   lastBeepSecond: -1,
   totalWorkoutSeconds: 30 * 60,
   totalRemainingSeconds: 30 * 60,
-  sessionStartTime: 0,
-  pausedElapsedOffset: 0,
-  
+
   // Audio
   currentTrackIndex: 0,
   isDucked: false,
@@ -68,30 +66,11 @@ const dom = {
   btnToggleSound: document.getElementById('btnToggleSound'),
   soundIcon: document.getElementById('soundIcon'),
   btnToggleFullscreen: document.getElementById('btnToggleFullscreen'),
-  btnOpenSetup: document.getElementById('btnOpenSetup'),
+  btnQuickSettings: document.getElementById('btnQuickSettings'),
 
   // Views
-  viewSetup: document.getElementById('viewSetup'),
   viewArena: document.getElementById('viewArena'),
   viewComplete: document.getElementById('viewComplete'),
-
-  // Setup Form
-  presetChips: document.querySelectorAll('.preset-chip'),
-  sliderTotalMinutes: document.getElementById('sliderTotalMinutes'),
-  valTotalMinutes: document.getElementById('valTotalMinutes'),
-  sliderWorkSeconds: document.getElementById('sliderWorkSeconds'),
-  valWorkSeconds: document.getElementById('valWorkSeconds'),
-  sliderRestSeconds: document.getElementById('sliderRestSeconds'),
-  valRestSeconds: document.getElementById('valRestSeconds'),
-  radioPrepTimes: document.querySelectorAll('input[name="prepTime"]'),
-  valPrepSeconds: document.getElementById('valPrepSeconds'),
-  chkEnableNasheed: document.getElementById('chkEnableNasheed'),
-  sliderNasheedVolume: document.getElementById('sliderNasheedVolume'),
-  valNasheedVolume: document.getElementById('valNasheedVolume'),
-  calcTotalSets: document.getElementById('calcTotalSets'),
-  calcActiveWork: document.getElementById('calcActiveWork'),
-  calcActiveRest: document.getElementById('calcActiveRest'),
-  btnStartWorkout: document.getElementById('btnStartWorkout'),
 
   // Arena HUD
   hudTotalRemaining: document.getElementById('hudTotalRemaining'),
@@ -121,7 +100,17 @@ const dom = {
   sumSetsCompleted: document.getElementById('sumSetsCompleted'),
   sumActiveWork: document.getElementById('sumActiveWork'),
   sumActiveRest: document.getElementById('sumActiveRest'),
-  btnStartNewWorkout: document.getElementById('btnStartNewWorkout')
+  btnRestartSession: document.getElementById('btnRestartSession'),
+  btnCloseTab: document.getElementById('btnCloseTab'),
+
+  // Modal Settings
+  settingsModal: document.getElementById('settingsModal'),
+  btnCloseModal: document.getElementById('btnCloseModal'),
+  modalTotalMin: document.getElementById('modalTotalMin'),
+  modalWorkSec: document.getElementById('modalWorkSec'),
+  modalRestSec: document.getElementById('modalRestSec'),
+  modalNasheedVol: document.getElementById('modalNasheedVol'),
+  btnSaveModalSettings: document.getElementById('btnSaveModalSettings')
 };
 
 const CIRCUMFERENCE = 1005.3; // 2 * Math.PI * 160
@@ -137,12 +126,10 @@ function initAudioEngine() {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     state.audioCtx = new AudioContextClass();
 
-    // Create Nasheed Audio Element
     state.nasheedElement = new Audio();
     state.nasheedElement.crossOrigin = 'anonymous';
     state.nasheedElement.preload = 'auto';
 
-    // Connect Nasheed through Web Audio Gain Node for Ducking
     const source = state.audioCtx.createMediaElementSource(state.nasheedElement);
     state.nasheedGainNode = state.audioCtx.createGain();
     state.nasheedGainNode.gain.setValueAtTime(state.nasheedMasterVolume, state.audioCtx.currentTime);
@@ -150,23 +137,21 @@ function initAudioEngine() {
     source.connect(state.nasheedGainNode);
     state.nasheedGainNode.connect(state.audioCtx.destination);
 
-    // Continuous Playlist Looping
     state.nasheedElement.addEventListener('ended', onTrackEnded);
-    state.nasheedElement.addEventListener('error', (e) => {
-      console.warn('Nasheed playback error, attempting next track:', e);
+    state.nasheedElement.addEventListener('error', () => {
       onTrackEnded();
     });
 
     state.isAudioGraphReady = true;
   } catch (err) {
-    console.warn('Web Audio API initialization note:', err);
+    console.warn('AudioEngine init note:', err);
   }
 }
 
 function loadTrack(index) {
   state.currentTrackIndex = index % NASHEED_PLAYLIST.length;
   const track = NASHEED_PLAYLIST[state.currentTrackIndex];
-  
+
   if (state.nasheedElement) {
     state.nasheedElement.src = chrome.runtime.getURL(track.file);
   }
@@ -182,7 +167,6 @@ function onTrackEnded() {
   }
 }
 
-// Ducking: Smoothly Lower or Raise Nasheed Volume
 function setNasheedDucking(shouldDuck, immediate = false) {
   if (!state.isAudioGraphReady || !state.nasheedGainNode) return;
   state.isDucked = shouldDuck;
@@ -199,28 +183,27 @@ function setNasheedDucking(shouldDuck, immediate = false) {
   }
 
   if (shouldDuck) {
-    // Drop to 18% of user volume for clear countdown beeps
-    const duckedLevel = state.nasheedMasterVolume * 0.20;
+    const duckedLevel = state.nasheedMasterVolume * 0.18;
     state.nasheedGainNode.gain.linearRampToValueAtTime(duckedLevel, now + rampTime);
     dom.hudDuckingIndicator.textContent = '🔉 Ducked (Countdown)';
     dom.hudDuckingIndicator.className = 'ducking-indicator ducked';
   } else {
-    // Normal level: Full for Work (100%), Medium for Rest (50%)
-    const targetMultiplier = (state.currentPhase === 'REST') ? 0.50 : 1.0;
+    const targetMultiplier = (state.currentPhase === 'REST') ? 0.45 : 1.0;
     const fullLevel = state.nasheedMasterVolume * targetMultiplier;
-    state.nasheedGainNode.gain.linearRampToValueAtTime(fullLevel, now + 0.5);
+    state.nasheedGainNode.gain.linearRampToValueAtTime(fullLevel, now + 0.45);
     dom.hudDuckingIndicator.textContent = (state.currentPhase === 'REST') ? '🎵 Calm Rest' : '🔥 Full Energy';
     dom.hudDuckingIndicator.className = 'ducking-indicator';
   }
 }
 
-// Crisp Synthesized Gym Beeps (No external wav file dependencies!)
 function playGymTone(type) {
   if (state.isMuted) return;
   if (!state.audioCtx) initAudioEngine();
-  if (state.audioCtx.state === 'suspended') state.audioCtx.resume();
+  if (state.audioCtx && state.audioCtx.state === 'suspended') state.audioCtx.resume();
 
   const ctx = state.audioCtx;
+  if (!ctx) return;
+
   const now = ctx.currentTime;
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
@@ -229,15 +212,13 @@ function playGymTone(type) {
   gain.connect(ctx.destination);
 
   if (type === 'tick') {
-    // 5, 4, 3, 2, 1 Countdown Beep: A5 (880Hz), short sharp pop
     osc.type = 'triangle';
     osc.frequency.setValueAtTime(880, now);
-    gain.gain.setValueAtTime(0.7, now);
+    gain.gain.setValueAtTime(0.75, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
     osc.start(now);
     osc.stop(now + 0.12);
   } else if (type === 'start') {
-    // Work / GO! Chime: Dual Rising Tone (1174Hz -> 1760Hz)
     osc.type = 'sine';
     osc.frequency.setValueAtTime(1174.66, now);
     osc.frequency.exponentialRampToValueAtTime(1760, now + 0.25);
@@ -246,7 +227,6 @@ function playGymTone(type) {
     osc.start(now);
     osc.stop(now + 0.35);
   } else if (type === 'rest') {
-    // Rest Transition Chime: Descending soothing tone (880Hz -> 587Hz)
     osc.type = 'sine';
     osc.frequency.setValueAtTime(880, now);
     osc.frequency.exponentialRampToValueAtTime(587.33, now + 0.3);
@@ -255,7 +235,6 @@ function playGymTone(type) {
     osc.start(now);
     osc.stop(now + 0.4);
   } else if (type === 'victory') {
-    // Fanfare sequence
     [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
       const o = ctx.createOscillator();
       const g = ctx.createGain();
@@ -274,7 +253,7 @@ function playGymTone(type) {
 
 
 // ==========================================
-// 4. SCREEN WAKELOCK (No Screen Timeout)
+// 4. SCREEN WAKELOCK (Keeps Screen Awake)
 // ==========================================
 async function requestWakeLock() {
   if ('wakeLock' in navigator) {
@@ -306,51 +285,26 @@ document.addEventListener('visibilitychange', () => {
 
 
 // ==========================================
-// 5. WORKOUT TIMER LOGIC & DELTA ENGINE
+// 5. WORKOUT TIMER & DELTA ENGINE
 // ==========================================
 let timerAnimationId = null;
 
-function recalculateSetupSummary() {
-  const totalMins = Number(dom.sliderTotalMinutes.value);
-  const workSecs = Number(dom.sliderWorkSeconds.value);
-  const restSecs = Number(dom.sliderRestSeconds.value);
-  const oneCycle = workSecs + restSecs;
-
-  const totalWorkoutSecs = totalMins * 60;
-  const numSets = Math.max(1, Math.floor(totalWorkoutSecs / oneCycle));
-  const activeWorkSecs = numSets * workSecs;
-  const activeRestSecs = totalWorkoutSecs - activeWorkSecs;
-
-  state.totalMinutes = totalMins;
-  state.workSeconds = workSecs;
-  state.restSeconds = restSecs;
-  state.totalSets = numSets;
-
-  dom.valTotalMinutes.textContent = `${totalMins} মিনিট`;
-  dom.valWorkSeconds.textContent = `${workSecs} সেকেন্ড`;
-  dom.valRestSeconds.textContent = `${restSecs} সেকেন্ড`;
-
-  dom.calcTotalSets.textContent = `${numSets}টি সেট`;
-  dom.calcActiveWork.textContent = `${Math.round(activeWorkSecs / 60)} মিনিট`;
-  dom.calcActiveRest.textContent = `${Math.round(activeRestSecs / 60)} মিনিট`;
+function calculateWorkoutParameters() {
+  const oneCycle = state.workSeconds + state.restSeconds;
+  state.totalWorkoutSeconds = state.totalMinutes * 60;
+  state.totalSets = Math.max(1, Math.floor(state.totalWorkoutSeconds / oneCycle));
+  state.totalRemainingSeconds = state.totalWorkoutSeconds;
+  state.currentSet = 1;
 }
 
-function startWorkout() {
+function launchWorkoutDirectly() {
   initAudioEngine();
   if (state.audioCtx && state.audioCtx.state === 'suspended') {
     state.audioCtx.resume();
   }
 
-  // Get configuration
-  recalculateSetupSummary();
-  const selectedPrep = document.querySelector('input[name="prepTime"]:checked');
-  state.prepSeconds = selectedPrep ? Number(selectedPrep.value) : 5;
-  state.totalWorkoutSeconds = state.totalMinutes * 60;
-  state.totalRemainingSeconds = state.totalWorkoutSeconds;
-  state.currentSet = 1;
+  calculateWorkoutParameters();
 
-  // Switch View to Arena
-  dom.viewSetup.classList.add('hidden');
   dom.viewComplete.classList.add('hidden');
   dom.viewArena.classList.remove('hidden');
 
@@ -358,17 +312,15 @@ function startWorkout() {
   state.isPaused = false;
   requestWakeLock();
 
-  // Load first nasheed and start playback with ducked volume for initial prep
+  // Load first track
   loadTrack(0);
   if (state.nasheedEnabled && state.nasheedElement) {
     state.nasheedElement.currentTime = 0;
-    state.nasheedElement.play().catch(e => console.log('Autoplay handled:', e));
+    state.nasheedElement.play().catch(() => {});
   }
 
-  // Start Phase: PREP
+  // Start with 5-second Prep Phase
   transitionToPhase('PREP');
-  state.sessionStartTime = Date.now();
-
   startTimerLoop();
 }
 
@@ -385,33 +337,31 @@ function transitionToPhase(newPhase) {
     dom.hudPhaseBadge.className = 'arena-phase-badge phase-prep';
     dom.hudPhaseText.textContent = '⚡ প্রস্তুত হন';
     dom.hudStateLabel.textContent = 'GET READY';
-    dom.hudSubHint.textContent = `প্রথম সেটের জন্য তৈরি হোন...`;
-    dom.hudNextPhase.textContent = `🔥 ${state.workSeconds} সে. ওয়ার্কআউট`;
-    setNasheedDucking(true); // Nasheed is low during prep countdown
-  } 
-  else if (newPhase === 'WORK') {
+    dom.hudSubHint.textContent = 'প্রথম সেটের জন্য তৈরি হোন...';
+    dom.hudNextPhase.textContent = `🔥 ${state.workSeconds} সে. ওয়ার্ক`;
+    setNasheedDucking(true);
+  } else if (newPhase === 'WORK') {
     document.body.classList.add('theme-work');
     state.phaseDuration = state.workSeconds;
     state.phaseRemainingSeconds = state.workSeconds;
     dom.hudPhaseBadge.className = 'arena-phase-badge phase-work';
     dom.hudPhaseText.textContent = '🔥 ব্যায়াম করুন';
     dom.hudStateLabel.textContent = 'WORK OUT';
-    dom.hudSubHint.textContent = `পুশ করুন! সর্বোচ্চ মনোযোগ দিন!`;
+    dom.hudSubHint.textContent = 'পুশ করুন! সর্বোচ্চ মনোযোগ দিন!';
     dom.hudNextPhase.textContent = `☕ ${state.restSeconds} সে. বিশ্রাম`;
     playGymTone('start');
-    setNasheedDucking(false); // Nasheed pumps up to 100%!
-  } 
-  else if (newPhase === 'REST') {
+    setNasheedDucking(false);
+  } else if (newPhase === 'REST') {
     document.body.classList.add('theme-rest');
     state.phaseDuration = state.restSeconds;
     state.phaseRemainingSeconds = state.restSeconds;
     dom.hudPhaseBadge.className = 'arena-phase-badge phase-rest';
     dom.hudPhaseText.textContent = '☕ বিশ্রাম নিন';
     dom.hudStateLabel.textContent = 'REST';
-    dom.hudSubHint.textContent = `গভীর শ্বাস নিন, পানি পান করুন...`;
-    dom.hudNextPhase.textContent = `🔥 ${state.workSeconds} সে. ওয়ার্কআউট`;
+    dom.hudSubHint.textContent = 'গভীর শ্বাস নিন, পানি পান করুন...';
+    dom.hudNextPhase.textContent = `🔥 ${state.workSeconds} সে. ওয়ার্ক`;
     playGymTone('rest');
-    setNasheedDucking(false); // Nasheed plays calmly during rest
+    setNasheedDucking(false);
   }
 
   state.phaseStartTime = Date.now();
@@ -438,16 +388,14 @@ function startTimerLoop() {
       // AUDIO DUCKING & COUNTDOWN TRIGGER (In the last 5 seconds)
       if (wholeSecond <= 5 && wholeSecond > 0 && wholeSecond !== state.lastBeepSecond) {
         state.lastBeepSecond = wholeSecond;
-        setNasheedDucking(true); // Duck nasheed volume for beeps
-        playGymTone('tick');    // Crisp countdown beep
+        setNasheedDucking(true);
+        playGymTone('tick');
       }
 
-      // Check Phase Completion
       if (state.phaseRemainingSeconds <= 0) {
         handlePhaseAdvance();
       }
 
-      // Check Session Complete
       if (state.totalRemainingSeconds <= 0) {
         finishWorkout();
         return;
@@ -480,34 +428,28 @@ function handlePhaseAdvance() {
 }
 
 function updateHUDDisplays() {
-  // 1. Interval Timer Display
   const currentSec = Math.max(0, Math.ceil(state.phaseRemainingSeconds));
   const m = Math.floor(currentSec / 60);
   const s = currentSec % 60;
   dom.hudIntervalDigits.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 
-  // Countdown Alert Class (last 5 seconds flash)
   if (currentSec <= 5 && currentSec > 0) {
     dom.hudIntervalDigits.classList.add('countdown-alert');
   } else {
     dom.hudIntervalDigits.classList.remove('countdown-alert');
   }
 
-  // 2. SVG Ring Progress (Depleting smooth ring)
   const percentElapsed = Math.min(1, Math.max(0, (state.phaseDuration - state.phaseRemainingSeconds) / state.phaseDuration));
   const dashOffset = CIRCUMFERENCE * percentElapsed;
   dom.ringProgress.style.strokeDashoffset = dashOffset;
 
-  // 3. Total Time Display
   const totalSec = Math.max(0, Math.ceil(state.totalRemainingSeconds));
   const totM = Math.floor(totalSec / 60);
   const totS = totalSec % 60;
   dom.hudTotalRemaining.textContent = `${totM.toString().padStart(2, '0')}:${totS.toString().padStart(2, '0')}`;
 
-  // 4. Set Progress
   dom.hudSetProgress.textContent = `${state.currentSet} / ${state.totalSets}`;
 
-  // 5. Overall Progress Bar
   const totalSessionElapsed = state.totalWorkoutSeconds - state.totalRemainingSeconds;
   const overallPct = Math.min(100, Math.max(0, (totalSessionElapsed / state.totalWorkoutSeconds) * 100));
   dom.sessionProgressBar.style.width = `${overallPct}%`;
@@ -552,19 +494,17 @@ function finishWorkout() {
 
   if (timerAnimationId) cancelAnimationFrame(timerAnimationId);
 
-  // Stop Nasheed with gentle fadeout
   if (state.nasheedGainNode && state.audioCtx) {
     const now = state.audioCtx.currentTime;
     state.nasheedGainNode.gain.cancelScheduledValues(now);
-    state.nasheedGainNode.gain.linearRampToValueAtTime(0, now + 1.5);
+    state.nasheedGainNode.gain.linearRampToValueAtTime(0, now + 1.2);
     setTimeout(() => {
       if (state.nasheedElement) state.nasheedElement.pause();
-    }, 1500);
+    }, 1200);
   }
 
   playGymTone('victory');
 
-  // Summary Metrics
   const totalSecsSpent = Math.min(state.totalWorkoutSeconds, Math.round(state.totalWorkoutSeconds - state.totalRemainingSeconds));
   const totM = Math.floor(totalSecsSpent / 60);
   const totS = totalSecsSpent % 60;
@@ -577,7 +517,6 @@ function finishWorkout() {
   const completedRestSec = Math.max(0, totalSecsSpent - completedWorkSec);
   dom.sumActiveRest.textContent = `${Math.floor(completedRestSec / 60)}:${(completedRestSec % 60).toString().padStart(2, '0')}`;
 
-  // Switch to Complete View
   dom.viewArena.classList.add('hidden');
   dom.viewComplete.classList.remove('hidden');
 }
@@ -586,67 +525,6 @@ function finishWorkout() {
 // ==========================================
 // 6. EVENT LISTENERS & USER CONTROLS
 // ==========================================
-// Setup Input Listeners
-dom.sliderTotalMinutes.addEventListener('input', recalculateSetupSummary);
-dom.sliderWorkSeconds.addEventListener('input', recalculateSetupSummary);
-dom.sliderRestSeconds.addEventListener('input', recalculateSetupSummary);
-
-// Preset Chips Click
-dom.presetChips.forEach(chip => {
-  chip.addEventListener('click', () => {
-    dom.presetChips.forEach(c => c.classList.remove('active'));
-    chip.classList.add('active');
-
-    const w = chip.dataset.work;
-    const r = chip.dataset.rest;
-    const t = chip.dataset.total;
-
-    dom.sliderWorkSeconds.value = w;
-    dom.sliderRestSeconds.value = r;
-    dom.sliderTotalMinutes.value = t;
-
-    recalculateSetupSummary();
-  });
-});
-
-// Prep Radios
-dom.radioPrepTimes.forEach(radio => {
-  radio.addEventListener('change', () => {
-    document.querySelectorAll('.radio-chip').forEach(c => c.classList.remove('selected'));
-    radio.closest('.radio-chip').classList.add('selected');
-    dom.valPrepSeconds.textContent = `${radio.value} সেকেন্ড`;
-  });
-});
-
-// Nasheed Toggle & Volume
-dom.chkEnableNasheed.addEventListener('change', () => {
-  state.nasheedEnabled = dom.chkEnableNasheed.checked;
-  if (!state.nasheedEnabled && state.nasheedElement) {
-    state.nasheedElement.pause();
-    dom.equalizerBars.classList.add('paused');
-  } else if (state.nasheedEnabled && state.isRunning && !state.isPaused && state.nasheedElement) {
-    state.nasheedElement.play().catch(() => {});
-    dom.equalizerBars.classList.remove('paused');
-  }
-});
-
-dom.sliderNasheedVolume.addEventListener('input', () => {
-  const vol = parseFloat(dom.sliderNasheedVolume.value);
-  state.nasheedMasterVolume = vol;
-  dom.valNasheedVolume.textContent = `${Math.round(vol * 100)}%`;
-  if (state.nasheedGainNode && !state.isDucked && !state.isMuted) {
-    state.nasheedGainNode.gain.setValueAtTime(vol, state.audioCtx.currentTime);
-  }
-});
-
-// Launch Button
-dom.btnStartWorkout.addEventListener('click', startWorkout);
-dom.btnStartNewWorkout.addEventListener('click', () => {
-  dom.viewComplete.classList.add('hidden');
-  dom.viewSetup.classList.remove('hidden');
-});
-
-// Arena Buttons
 dom.btnPauseResume.addEventListener('click', togglePauseResume);
 dom.btnSkipPhase.addEventListener('click', skipPhase);
 dom.btnRestartInterval.addEventListener('click', restartInterval);
@@ -656,14 +534,9 @@ dom.btnStopWorkout.addEventListener('click', () => {
   }
 });
 
-dom.btnOpenSetup.addEventListener('click', () => {
-  if (state.isRunning) {
-    if (confirm('সেটিংস পরিবর্তন করতে চান? বর্তমান সেশন পজ করা হবে।')) {
-      togglePauseResume();
-      dom.viewArena.classList.add('hidden');
-      dom.viewSetup.classList.remove('hidden');
-    }
-  }
+dom.btnRestartSession.addEventListener('click', launchWorkoutDirectly);
+dom.btnCloseTab.addEventListener('click', () => {
+  window.close();
 });
 
 // Sound Toggle (Mute / Unmute)
@@ -687,17 +560,37 @@ dom.btnToggleFullscreen.addEventListener('click', () => {
   }
 });
 
-// Keyboard Shortcuts (Space, Right, F, M, Escape)
+// Floating Settings Modal
+dom.btnQuickSettings.addEventListener('click', () => {
+  dom.modalTotalMin.value = state.totalMinutes;
+  dom.modalWorkSec.value = state.workSeconds;
+  dom.modalRestSec.value = state.restSeconds;
+  dom.modalNasheedVol.value = state.nasheedMasterVolume;
+  dom.settingsModal.classList.remove('hidden');
+});
+
+dom.btnCloseModal.addEventListener('click', () => {
+  dom.settingsModal.classList.add('hidden');
+});
+
+dom.btnSaveModalSettings.addEventListener('click', () => {
+  state.totalMinutes = Math.max(1, parseInt(dom.modalTotalMin.value, 10) || 30);
+  state.workSeconds = Math.max(5, parseInt(dom.modalWorkSec.value, 10) || 30);
+  state.restSeconds = Math.max(5, parseInt(dom.modalRestSec.value, 10) || 30);
+  state.nasheedMasterVolume = parseFloat(dom.modalNasheedVol.value) || 0.85;
+
+  dom.settingsModal.classList.add('hidden');
+  launchWorkoutDirectly();
+});
+
+// Keyboard Shortcuts
 window.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
 
   if (e.code === 'Space') {
     e.preventDefault();
-    if (dom.viewSetup.classList.contains('hidden') && !dom.viewComplete.classList.contains('hidden')) {
-      return;
-    }
     if (!state.isRunning) {
-      startWorkout();
+      launchWorkoutDirectly();
     } else {
       togglePauseResume();
     }
@@ -712,20 +605,18 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
+
 // ==========================================
-// 7. INITIALIZATION & URL PARAMS
+// 7. INITIALIZATION (DIRECT ARENA LAUNCH)
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-  // Check URL parameters for quick launch from popup
   const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.has('total')) dom.sliderTotalMinutes.value = urlParams.get('total');
-  if (urlParams.has('work')) dom.sliderWorkSeconds.value = urlParams.get('work');
-  if (urlParams.has('rest')) dom.sliderRestSeconds.value = urlParams.get('rest');
 
-  recalculateSetupSummary();
+  if (urlParams.has('total')) state.totalMinutes = parseInt(urlParams.get('total'), 10) || 30;
+  if (urlParams.has('work')) state.workSeconds = parseInt(urlParams.get('work'), 10) || 30;
+  if (urlParams.has('rest')) state.restSeconds = parseInt(urlParams.get('rest'), 10) || 30;
+  if (urlParams.has('nasheed')) state.nasheedEnabled = (urlParams.get('nasheed') !== '0');
 
-  // If auto-start requested
-  if (urlParams.get('autostart') === 'true') {
-    startWorkout();
-  }
+  // Immediately Launch Arena Directly! (No intermediate setup clutter)
+  launchWorkoutDirectly();
 });

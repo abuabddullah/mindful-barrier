@@ -18,150 +18,228 @@
       </div>
       <div class="status-indicator-badge">
         <span class="dot"></span>
-        <span>সুরক্ষা চালু</span>
+        <span>সক্রিয়</span>
       </div>
     </header>
 
-    <!-- Stats Grid -->
-    <section class="stats-grid">
-      <div class="stat-card">
-        <span class="stat-val" id="statBlocked">০</span>
-        <span class="stat-lbl">বাধা দেওয়া হয়েছে</span>
-      </div>
-      <div class="stat-card highlight">
-        <span class="stat-val" id="statSaved">০</span>
-        <span class="stat-lbl">প্রলোভন জয় করেছেন</span>
-      </div>
-    </section>
+    <!-- Top Tab Navigation Bar -->
+    <nav class="popup-tabs">
+      <button type="button" class="tab-btn active" data-tab="tabBlocker">
+        <span class="tab-icon">🛑</span>
+        <span>সাইট ব্লকার</span>
+      </button>
+      <button type="button" class="tab-btn" data-tab="tabIstighfar">
+        <span class="tab-icon">📿</span>
+        <span>ইস্তিগফার</span>
+      </button>
+      <button type="button" class="tab-btn" data-tab="tabWorkout">
+        <span class="tab-icon">⚡</span>
+        <span>ওয়ার্কআউট</span>
+      </button>
+    </nav>
 
-    <!-- Periodic Istighfar Reminder Section -->
-    <section class="istighfar-section">
-      <div class="istighfar-header">
-        <div class="istighfar-title">
-          <span class="icon">📿</span>
-          <span>ইস্তিগফার ও জিকির রিমাইন্ডার</span>
+    <!-- ========================================== -->
+    <!-- TAB 1: SITE BLOCKER (DEFAULT)              -->
+    <!-- ========================================== -->
+    <div class="tab-pane active" id="tabBlocker">
+      <!-- Stats Grid -->
+      <section class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-val" id="statBlocked">০</span>
+          <span class="stat-lbl">বাধা দেওয়া হয়েছে</span>
         </div>
-        <label class="switch">
-          <input type="checkbox" id="toggleIstighfar">
-          <span class="slider round"></span>
-        </label>
-      </div>
+        <div class="stat-card highlight">
+          <span class="stat-val" id="statSaved">০</span>
+          <span class="stat-lbl">প্রলোভন জয় করেছেন</span>
+        </div>
+      </section>
 
-      <div class="istighfar-body" id="istighfarBody">
-        <div class="istighfar-row">
-          <label for="istighfarInterval">বিরতির সময়:</label>
-          <select id="istighfarInterval" class="istighfar-select">
-            <option value="1">প্রতি ১ মিনিট পর পর</option>
-            <option value="2">প্রতি ২ মিনিট পর পর</option>
-            <option value="5">প্রতি ৫ মিনিট পর পর</option>
-            <option value="10">প্রতি ১০ মিনিট পর পর</option>
-            <option value="15">প্রতি ১৫ মিনিট পর পর</option>
-            <option value="30">প্রতি ৩০ মিনিট পর পর</option>
-          </select>
+      <!-- Quick Check Presets (Social Media) -->
+      <section class="presets-section">
+        <div class="section-title">
+          <span>জনপ্রিয় সোশ্যাল মিডিয়া নির্বাচন করুন</span>
+          <button id="btnSelectAll" class="btn-text-small">সব সিলেক্ট</button>
+        </div>
+        <div class="preset-grid" id="presetGrid">
+          <!-- Preset checkboxes rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- Custom URLs / Domains -->
+      <section class="custom-section">
+        <div class="section-title">
+          <span>যেকোনো ওয়েবসাইট বা URL ব্লক করুন</span>
+        </div>
+        <div class="add-url-row">
+          <input type="text" id="customUrlInput" placeholder="যেমন: netflix.com বা যেকোনো লিঙ্ক">
+          <button id="btnAddCustomUrl" class="btn-primary-add">+ যুক্ত করুন</button>
         </div>
 
-        <div class="istighfar-status-card">
-          <div class="status-indicator">
-            <span class="pulse-dot" id="istighfarPulse"></span>
-            <span class="status-text" id="istighfarCountdownText">স্ট্যাটাস: বন্ধ রয়েছে</span>
+        <!-- Custom URLs List -->
+        <div class="custom-list" id="customList">
+          <!-- Dynamic custom list -->
+        </div>
+      </section>
+
+      <!-- Footer Action -->
+      <footer class="popup-footer">
+        <button id="btnTriggerDeactivate" class="btn-deactivate">
+          ⚠️ সম্পূর্ণ সুরক্ষা নিষ্ক্রিয় করবেন? (১০টি ধাপ লাগবে)
+        </button>
+      </footer>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- TAB 2: PERIODIC ISTIGHFAR REMINDER         -->
+    <!-- ========================================== -->
+    <div class="tab-pane" id="tabIstighfar">
+      <section class="istighfar-tab-card">
+        <div class="istighfar-header">
+          <div class="istighfar-title">
+            <span class="icon">📿</span>
+            <span>ইস্তিগফার ও জিকির রিমাইন্ডার</span>
           </div>
-          <button id="btnTestIstighfar" class="btn-test-audio" title="টেস্ট প্লে করে চেক করুন">▶️ টেস্ট শুনুন</button>
-        </div>
-
-        <div class="istighfar-options">
-          <label class="checkbox-option">
-            <input type="checkbox" id="chkAutoResume" checked>
-            <span>ভিডিও/অডিও সাময়িক পজ করে জিকির শেষে আবার চালু হবে</span>
-          </label>
-          <label class="checkbox-option">
-            <input type="checkbox" id="chkProtectCalls" checked>
-            <span>গুগল মিট / কলের অডিও নিরাপদ রাখা (মিটিংয়ে বিঘ্ন ঘটবে না)</span>
+          <label class="switch">
+            <input type="checkbox" id="toggleIstighfar">
+            <span class="slider round"></span>
           </label>
         </div>
-      </div>
-    </section>
 
-    <!-- Mindful Workout / Interval Trainer Section -->
-    <section class="workout-trigger-section">
-      <div class="workout-trigger-header">
-        <div class="workout-title">
-          <span class="icon">⚡</span>
-          <span>ইন্টারভাল ওয়ার্কআউট এরিনা</span>
+        <p class="tab-desc-text">কাজের মাঝে নিয়মিত আস্তাগফিরুল্লাহ জিকির স্মরণ করিয়ে দেবে।</p>
+
+        <div class="istighfar-body" id="istighfarBody">
+          <div class="form-row">
+            <label for="istighfarInterval">বিরতির সময়:</label>
+            <select id="istighfarInterval" class="styled-select">
+              <option value="1">প্রতি ১ মিনিট পর পর</option>
+              <option value="2">প্রতি ২ মিনিট পর পর</option>
+              <option value="5">প্রতি ৫ মিনিট পর পর</option>
+              <option value="10">প্রতি ১০ মিনিট পর পর</option>
+              <option value="15">প্রতি ১৫ মিনিট পর পর</option>
+              <option value="30">প্রতি ৩০ মিনিট পর পর</option>
+            </select>
+          </div>
+
+          <div class="istighfar-status-card">
+            <div class="status-indicator">
+              <span class="pulse-dot" id="istighfarPulse"></span>
+              <span class="status-text" id="istighfarCountdownText">স্ট্যাটাস: বন্ধ রয়েছে</span>
+            </div>
+            <button id="btnTestIstighfar" class="btn-test-audio" title="টেস্ট প্লে করে চেক করুন">▶️ টেস্ট শুনুন</button>
+          </div>
+
+          <div class="istighfar-options">
+            <label class="checkbox-option">
+              <input type="checkbox" id="chkAutoResume" checked>
+              <span>ভিডিও/অডিও সাময়িক পজ করে জিকির শেষে আবার চালু হবে</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" id="chkProtectCalls" checked>
+              <span>গুগল মিট / কলের অডিও নিরাপদ রাখা (মিটিংয়ে বিঘ্ন ঘটবে না)</span>
+            </label>
+          </div>
         </div>
-        <span class="workout-pill">HIIT + Nasheed</span>
-      </div>
+      </section>
+    </div>
 
-      <div class="workout-quick-row">
-        <div class="quick-col">
-          <label>মোট সময়:</label>
-          <select id="quickTotalTime" class="workout-select">
-            <option value="15">১৫ মি.</option>
-            <option value="20">২০ মি.</option>
-            <option value="30" selected>৩০ মি.</option>
-            <option value="45">৪৫ মি.</option>
-            <option value="60">৬০ মি.</option>
-          </select>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: WORKOUT ARENA SETUP & DIRECT START  -->
+    <!-- ========================================== -->
+    <div class="tab-pane" id="tabWorkout">
+      <section class="workout-tab-card">
+        <div class="workout-tab-header">
+          <div class="workout-tab-title">
+            <span class="icon">⚡</span>
+            <span>ইন্টারভাল ওয়ার্কআউট এরিনা</span>
+          </div>
+          <span class="workout-badge-pill">HIIT + Nasheed</span>
         </div>
-        <div class="quick-col">
-          <label>ওয়ার্ক:</label>
-          <select id="quickWorkTime" class="workout-select">
-            <option value="20">২০ সে.</option>
-            <option value="30" selected>৩০ সে.</option>
-            <option value="45">৪৫ সে.</option>
-            <option value="60">৬০ সে.</option>
-          </select>
+
+        <p class="tab-desc-text">
+          ভোকাল নাসিদ লুপ ও ট্রানজিশনে অটো-ডাকিং (`5, 4, 3, 2, 1`) সহ ফুলস্ক্রিন এরিনা।
+        </p>
+
+        <!-- Total Workout Time -->
+        <div class="workout-config-item">
+          <div class="config-label-row">
+            <span class="config-label">⏱️ সর্বমোট ওয়ার্কআউট সময়:</span>
+          </div>
+          <div class="config-input-group">
+            <select id="quickTotalTime" class="styled-select">
+              <option value="15">১৫ মিনিট</option>
+              <option value="20">২০ মিনিট</option>
+              <option value="30" selected>৩০ মিনিট</option>
+              <option value="45">৪৫ মিনিট</option>
+              <option value="60">৬০ মিনিট</option>
+              <option value="custom">✏️ কাস্টম সময় লিখুন...</option>
+            </select>
+            <div class="custom-input-wrap hidden" id="wrapCustomTotal">
+              <input type="number" id="inputCustomTotal" min="1" max="180" placeholder="মিনিট (যেমন 25)">
+              <span class="unit-tag">মিনিট</span>
+            </div>
+          </div>
         </div>
-        <div class="quick-col">
-          <label>রেস্ট:</label>
-          <select id="quickRestTime" class="workout-select">
-            <option value="15">১৫ সে.</option>
-            <option value="30" selected>৩০ সে.</option>
-            <option value="45">৪৫ সে.</option>
-            <option value="60">৬০ সে.</option>
-          </select>
+
+        <!-- Work Interval -->
+        <div class="workout-config-item highlight-work">
+          <div class="config-label-row">
+            <span class="config-label">🔥 ব্যায়াম সময় (প্রতি সেট):</span>
+          </div>
+          <div class="config-input-group">
+            <select id="quickWorkTime" class="styled-select">
+              <option value="20">২০ সেকেন্ড</option>
+              <option value="30" selected>৩০ সেকেন্ড</option>
+              <option value="45">৪৫ সেকেন্ড</option>
+              <option value="60">৬০ সেকেন্ড (১ মি.)</option>
+              <option value="custom">✏️ কাস্টম সময় লিখুন...</option>
+            </select>
+            <div class="custom-input-wrap hidden" id="wrapCustomWork">
+              <input type="number" id="inputCustomWork" min="5" max="600" placeholder="সেকেন্ড (যেমন 40)">
+              <span class="unit-tag">সেকেন্ড</span>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <button id="btnOpenWorkout" class="btn-launch-workout">
-        <span>🔥 ওয়ার্কআউট এরিনা খুলুন (নাসিদ লুপ)</span>
-        <span class="arrow-icon">↗</span>
-      </button>
-    </section>
+        <!-- Rest Interval -->
+        <div class="workout-config-item highlight-rest">
+          <div class="config-label-row">
+            <span class="config-label">☕ বিশ্রাম সময় (প্রতি সেট):</span>
+          </div>
+          <div class="config-input-group">
+            <select id="quickRestTime" class="styled-select">
+              <option value="10">১০ সেকেন্ড</option>
+              <option value="15">১৫ সেকেন্ড</option>
+              <option value="30" selected>৩০ সেকেন্ড</option>
+              <option value="45">৪৫ সেকেন্ড</option>
+              <option value="60">৬০ সেকেন্ড (১ মি.)</option>
+              <option value="custom">✏️ কাস্টম সময় লিখুন...</option>
+            </select>
+            <div class="custom-input-wrap hidden" id="wrapCustomRest">
+              <input type="number" id="inputCustomRest" min="5" max="300" placeholder="সেকেন্ড (যেমন 25)">
+              <span class="unit-tag">সেকেন্ড</span>
+            </div>
+          </div>
+        </div>
 
-    <!-- Quick Check Presets (Social Media) -->
-    <section class="presets-section">
-      <div class="section-title">
-        <span>জনপ্রিয় সোশ্যাল মিডিয়া নির্বাচন করুন</span>
-        <button id="btnSelectAll" class="btn-text-small">সব সিলেক্ট</button>
-      </div>
+        <!-- Nasheed Ducking Feature Checkbox -->
+        <div class="workout-options">
+          <label class="checkbox-option">
+            <input type="checkbox" id="chkWorkoutNasheed" checked>
+            <span>ভোকাল নাসিদ লুপ ও ৫ সেকেন্ডে অটো-ডাকিং চালু</span>
+          </label>
+        </div>
 
-      <div class="preset-grid" id="presetGrid">
-        <!-- Preset checkboxes rendered dynamically -->
-      </div>
-    </section>
+        <!-- Direct Start Button -->
+        <button id="btnOpenWorkout" class="btn-giant-workout-start">
+          <span class="btn-icon">🔥</span>
+          <span>সরাসরি ওয়ার্কআউট শুরু করুন</span>
+          <span class="arrow-icon">➔</span>
+        </button>
+      </section>
+    </div>
 
-    <!-- Custom URLs / Domains -->
-    <section class="custom-section">
-      <div class="section-title">
-        <span>যেকোনো ওয়েবসাইট বা URL ব্লক করুন</span>
-      </div>
-      <div class="add-url-row">
-        <input type="text" id="customUrlInput" placeholder="যেমন: netflix.com বা যেকোনো লিঙ্ক">
-        <button id="btnAddCustomUrl" class="btn-primary-add">+ যুক্ত করুন</button>
-      </div>
-
-      <!-- Custom URLs List -->
-      <div class="custom-list" id="customList">
-        <!-- Dynamic custom list -->
-      </div>
-    </section>
-
-    <!-- Footer Action -->
-    <footer class="popup-footer">
-      <button id="btnTriggerDeactivate" class="btn-deactivate">
-        ⚠️ সম্পূর্ণ সুরক্ষা নিষ্ক্রিয় করবেন? (১০টি ধাপ লাগবে)
-      </button>
-    </footer>
   </div>
 
   <script src="popup.js"></script>

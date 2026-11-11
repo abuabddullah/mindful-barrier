@@ -362,21 +362,92 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ==========================================
-  // Mindful Workout Arena Opener
+  // Tab Switching Navigation
+  // ==========================================
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabPanes = document.querySelectorAll('.tab-pane');
+
+  function switchTab(targetTabId) {
+    tabBtns.forEach((b) => {
+      b.classList.toggle('active', b.dataset.tab === targetTabId);
+    });
+    tabPanes.forEach((p) => {
+      p.classList.toggle('active', p.id === targetTabId);
+    });
+    localStorage.setItem('mb_active_popup_tab', targetTabId);
+  }
+
+  tabBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      switchTab(btn.dataset.tab);
+    });
+  });
+
+  const savedTab = localStorage.getItem('mb_active_popup_tab');
+  if (savedTab && document.getElementById(savedTab)) {
+    switchTab(savedTab);
+  }
+
+  // ==========================================
+  // Mindful Workout Arena Opener with Custom Values
   // ==========================================
   const btnOpenWorkout = document.getElementById('btnOpenWorkout');
   const quickTotalTime = document.getElementById('quickTotalTime');
+  const wrapCustomTotal = document.getElementById('wrapCustomTotal');
+  const inputCustomTotal = document.getElementById('inputCustomTotal');
+
   const quickWorkTime = document.getElementById('quickWorkTime');
+  const wrapCustomWork = document.getElementById('wrapCustomWork');
+  const inputCustomWork = document.getElementById('inputCustomWork');
+
   const quickRestTime = document.getElementById('quickRestTime');
+  const wrapCustomRest = document.getElementById('wrapCustomRest');
+  const inputCustomRest = document.getElementById('inputCustomRest');
+
+  const chkWorkoutNasheed = document.getElementById('chkWorkoutNasheed');
+
+  function bindCustomToggle(selectEl, wrapEl, inputEl, defaultVal) {
+    if (!selectEl || !wrapEl) return;
+    selectEl.addEventListener('change', () => {
+      if (selectEl.value === 'custom') {
+        wrapEl.classList.remove('hidden');
+        if (inputEl && !inputEl.value) inputEl.value = defaultVal;
+        if (inputEl) inputEl.focus();
+      } else {
+        wrapEl.classList.add('hidden');
+      }
+    });
+  }
+
+  bindCustomToggle(quickTotalTime, wrapCustomTotal, inputCustomTotal, '30');
+  bindCustomToggle(quickWorkTime, wrapCustomWork, inputCustomWork, '30');
+  bindCustomToggle(quickRestTime, wrapCustomRest, inputCustomRest, '30');
 
   if (btnOpenWorkout) {
     btnOpenWorkout.addEventListener('click', () => {
-      const total = quickTotalTime ? quickTotalTime.value : '30';
-      const work = quickWorkTime ? quickWorkTime.value : '30';
-      const rest = quickRestTime ? quickRestTime.value : '30';
+      const total = (quickTotalTime && quickTotalTime.value === 'custom')
+        ? (parseInt(inputCustomTotal.value, 10) || 30)
+        : parseInt(quickTotalTime ? quickTotalTime.value : 30, 10);
 
-      const workoutUrl = chrome.runtime.getURL('workout.html') + `?total=${encodeURIComponent(total)}&work=${encodeURIComponent(work)}&rest=${encodeURIComponent(rest)}`;
-      chrome.tabs.create({ url: workoutUrl });
+      const work = (quickWorkTime && quickWorkTime.value === 'custom')
+        ? (parseInt(inputCustomWork.value, 10) || 30)
+        : parseInt(quickWorkTime ? quickWorkTime.value : 30, 10);
+
+      const rest = (quickRestTime && quickRestTime.value === 'custom')
+        ? (parseInt(inputCustomRest.value, 10) || 30)
+        : parseInt(quickRestTime ? quickRestTime.value : 30, 10);
+
+      const enableNasheed = chkWorkoutNasheed ? chkWorkoutNasheed.checked : true;
+
+      const params = new URLSearchParams({
+        total: total,
+        work: work,
+        rest: rest,
+        nasheed: enableNasheed ? '1' : '0',
+        autostart: 'true'
+      });
+
+      chrome.tabs.create({ url: chrome.runtime.getURL('workout.html') + '?' + params.toString() });
     });
   }
 
