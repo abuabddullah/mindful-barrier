@@ -328,33 +328,43 @@ document.addEventListener('DOMContentLoaded', async () => {
       await chrome.storage.local.set({ istighfarSettings });
     });
 
-    // Test Play Button
+    // Test Play Button (Single Source of Truth: Offscreen Audio Engine)
+    let isTestPlaying = false;
+    let testTimeout = null;
+
     btnTestIstighfar.addEventListener('click', () => {
+      if (isTestPlaying) {
+        // If already playing, stop playback immediately
+        chrome.runtime.sendMessage({ type: 'STOP_AUDIO' });
+        btnTestIstighfar.textContent = '▶️ টেস্ট শুনুন';
+        isTestPlaying = false;
+        if (testTimeout) clearTimeout(testTimeout);
+        return;
+      }
+
+      isTestPlaying = true;
       btnTestIstighfar.textContent = '⏳ বাজছে...';
 
-      // 1. Direct audio playback inside popup for guaranteed 100% instant sound
-      try {
-        const directAudio = new Audio(chrome.runtime.getURL('sounds/istigfar.wav'));
-        directAudio.volume = 1.0;
-        directAudio.play().catch(e => console.warn('Direct popup play:', e));
-        directAudio.onended = () => {
-          btnTestIstighfar.textContent = '▶️ টেস্ট শুনুন';
-        };
-      } catch (e) {}
+      // Trigger single background offscreen playback (eliminates duplicate audio/echo)
+      chrome.runtime.sendMessage({ type: 'TEST_ISTIGHFAR_NOW' });
 
-      // 2. Trigger background flow to test pausing other tabs
-      chrome.runtime.sendMessage({ type: 'TEST_ISTIGHFAR_NOW' }, () => {
-        setTimeout(() => {
-          btnTestIstighfar.textContent = '▶️ টেস্ট শুনুন';
-        }, 5200);
-      });
+      // Fallback timer to reset button text in case of message disconnect
+      if (testTimeout) clearTimeout(testTimeout);
+      testTimeout = setTimeout(() => {
+        btnTestIstighfar.textContent = '▶️ টেস্ট শুনুন';
+        isTestPlaying = false;
+      }, 5000);
     });
 
-    // Listen for background timer triggers
+    // Listen for background timer triggers & playback finish
     chrome.runtime.onMessage.addListener((msg) => {
       if (msg.type === 'ISTIGHFAR_TRIGGERED' && msg.nextTriggerTime) {
         istighfarSettings.nextTriggerTime = msg.nextTriggerTime;
         updateIstighfarUI();
+      } else if (msg.type === 'AUDIO_PLAYBACK_FINISHED') {
+        btnTestIstighfar.textContent = '▶️ টেস্ট শুনুন';
+        isTestPlaying = false;
+        if (testTimeout) clearTimeout(testTimeout);
       }
     });
 

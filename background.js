@@ -362,7 +362,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
-  if (message.type === 'AUDIO_PLAYBACK_FINISHED') {
+  if (message.type === 'AUDIO_PLAYBACK_FINISHED' || message.type === 'STOP_AUDIO') {
     (async () => {
       const { istighfarSettings = DEFAULT_ISTIGHFAR_SETTINGS } = await chrome.storage.local.get('istighfarSettings');
       if (istighfarSettings.autoResumeMedia) {
